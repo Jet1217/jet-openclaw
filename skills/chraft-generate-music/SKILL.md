@@ -1,18 +1,11 @@
 ---
 name: chraft-generate-music
-description: Generate music or songs via the Chraft media API. Use this skill whenever the user wants to create, compose, or generate any kind of music, background track, song, or audio — even if they don't say "generate" explicitly. Supports two providers: ElevenLabs (fast, prompt-based, up to 60s, returns immediately) and Suno (full song with lyrics, vocals, and custom style, async). Authentication is handled automatically from the sandbox user context.
+description: Generate music or songs via the Chraft media API. Use this skill whenever the user wants to create, compose, or generate any kind of music, background track, song, or audio — even if they don't say "generate" explicitly. Uses Suno (full song with lyrics, vocals, and custom style, async). Authentication is handled automatically from the sandbox user context.
 ---
 
 # Chraft — Music Generation
 
-This skill generates music by calling Chraft's `/api/openclaw/media/music` endpoint.
-
-Two providers are available:
-
-| Provider               | Best for                                     | Mode                                         | Cost       |
-| ---------------------- | -------------------------------------------- | -------------------------------------------- | ---------- |
-| `elevenlabs` (default) | Background music, short tracks, fast results | Synchronous — audio URL returned immediately | 30 credits |
-| `suno`                 | Full songs with vocals, lyrics, custom style | Async — poll until complete                  | 50 credits |
+This skill generates music by calling Chraft's `/api/openclaw/media/music` endpoint using Suno.
 
 ---
 
@@ -39,46 +32,9 @@ If `chraftUseKey` is empty, tell the user their sandbox hasn't been linked to a 
 
 ---
 
-## Provider A — ElevenLabs (synchronous, default)
+## Suno — async, full songs (50 credits)
 
-Use for background music, ambient tracks, short clips, or any time the user wants a quick result without lyrics.
-
-### Step 1 — Generate
-
-```javascript
-const res = await fetch(`${CHRAFT_BASE_URL}/api/openclaw/media/music`, {
-  method: "POST",
-  headers: authHeaders(),
-  body: JSON.stringify({
-    provider: "elevenlabs", // optional — this is the default
-    prompt, // music description, style, mood
-    duration, // seconds, 1–60 (default: 30)
-  }),
-});
-
-if (!res.ok) {
-  const err = await res.json();
-  throw new Error(err.error || "Failed to generate music");
-}
-
-const data = await res.json();
-// data.status === 'completed' — audio is ready immediately
-const { audioUrl, duration: actualDuration, creditsConsumed } = data;
-```
-
-ElevenLabs is **synchronous** — `audioUrl` is returned directly in the POST response. No polling needed.
-
-**Prompt tips for ElevenLabs:**
-
-- Include vocals/lyrics directly in the prompt: `"upbeat pop song with female vocals singing: [lyrics here]"`
-- For instrumental only: add `"instrumental only"` to the prompt
-- Be descriptive about mood, genre, tempo, instruments
-
----
-
-## Provider B — Suno (async, full songs)
-
-Use when the user wants a complete song with vocals, custom lyrics, a specific style, or a named title.
+Use when the user wants any music: background tracks, full songs with vocals, custom lyrics, instrumental, or a specific style.
 
 ### Step 1 — Start the generation job
 
@@ -147,14 +103,6 @@ throw new Error("Music generation timed out after 3 minutes");
 Always present the audio inline so the chat UI renders a player:
 
 ```markdown
-🎵 **[Song Title](https://...)**
-
-Provider: ElevenLabs · Duration: 30s · Credits used: 30
-```
-
-For Suno with multiple variants:
-
-```markdown
 🎵 **Variant 1 — [Title](https://...)**
 🎵 **Variant 2 — [Title](https://...)**
 
@@ -162,19 +110,6 @@ Provider: Suno · Credits used: 50
 ```
 
 The chat UI detects audio URLs (`.mp3`, `.wav`, `.ogg`, `.m4a`) and renders an inline player automatically.
-
----
-
-## Choosing the right provider
-
-| Signal from user                                           | Provider                                                                                    |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| "background music", "ambient", "quick track", "short clip" | `elevenlabs`                                                                                |
-| "song", "with lyrics", "vocals", "write a song about..."   | `suno`                                                                                      |
-| Provides lyrics text                                       | `suno` with `custom_mode: true`                                                             |
-| Wants instrumental only                                    | Either — pass `instrumental: true` (Suno) or add "instrumental only" to prompt (ElevenLabs) |
-| Needs result fast                                          | `elevenlabs`                                                                                |
-| Wants full production quality                              | `suno`                                                                                      |
 
 ---
 
@@ -195,13 +130,13 @@ All errors return `{ success: false, error: "..." }`. A `402` also includes `err
 ## Example interactions
 
 **"Generate 30 seconds of lo-fi background music"**
-→ `provider: "elevenlabs"`, `prompt: "lo-fi hip hop, soft piano, rain sounds, relaxing, instrumental only"`, `duration: 30`
+→ `provider: "suno"`, `prompt: "lo-fi hip hop, soft piano, rain sounds, relaxing"`, `instrumental: true`, `model: "V4_5"`
 
 **"Create a chill ambient track for my video"**
-→ `provider: "elevenlabs"`, `prompt: "ambient electronic, slow tempo, atmospheric pads, cinematic, instrumental only"`, `duration: 60`
+→ `provider: "suno"`, `prompt: "ambient electronic, slow tempo, atmospheric pads, cinematic"`, `instrumental: true`, `model: "V4_5"`
 
 **"Write and generate a pop song about summer"**
-→ `provider: "suno"`, `prompt: "<generated lyrics>`, `style: "pop, upbeat, female vocals"`, `title: "Summer Vibes"`
+→ `provider: "suno"`, `prompt: "<generated lyrics>"`, `style: "pop, upbeat, female vocals"`, `title: "Summer Vibes"`
 
 **"Generate an instrumental jazz track"**
 → `provider: "suno"`, `prompt: "smooth jazz, saxophone, piano, upright bass"`, `instrumental: true`, `model: "V4_5"`
