@@ -5,6 +5,7 @@ Add environment-specific notes here as you install and use skills.
 ## Installed Skills
 
 - **chraft-generate-image** — Generate images via Chraft media API
+- **chraft-generate-music** — Generate music and songs via Chraft media API (ElevenLabs or Suno)
 - **chraft-generate-video** — Generate videos via Chraft media API
 
 ## Notes

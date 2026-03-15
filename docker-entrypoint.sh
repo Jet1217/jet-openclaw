@@ -44,9 +44,14 @@ if [ -d "$AGENTS_SRC" ]; then
           [ -e "$skill_src" ] || continue
           skill_name="$(basename "$skill_src")"
           skill_dst="${dst_file}/${skill_name}"
-          if [ ! -e "$skill_dst" ]; then
-            cp -r "$skill_src" "$skill_dst"
+          # Only skip if the skill dir already has a SKILL.md (i.e. it was
+          # previously seeded correctly). An empty or partial directory is
+          # treated as if it doesn't exist so the skill gets re-seeded.
+          if [ -e "${skill_dst}/SKILL.md" ]; then
+            continue
           fi
+          rm -rf "$skill_dst"
+          cp -r "$skill_src" "$skill_dst"
         done
       fi
     done
