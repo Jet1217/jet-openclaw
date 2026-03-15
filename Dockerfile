@@ -134,6 +134,11 @@ COPY --from=runtime-assets --chown=node:node /app/openclaw.mjs .
 COPY --from=runtime-assets --chown=node:node /app/extensions ./extensions
 COPY --from=runtime-assets --chown=node:node /app/skills ./skills
 COPY --from=runtime-assets --chown=node:node /app/docs ./docs
+COPY --chown=node:node builtin/agents /app/builtin/agents
+
+# Entrypoint: copies workspace templates to /data on first boot, then execs CMD.
+COPY --chown=node:node docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
 
 # Keep pnpm available in the runtime image for container-local workflows.
 # Use a shared Corepack home so the non-root `node` user does not need a
@@ -227,4 +232,5 @@ USER node
 # For external access from host/ingress, override bind to "lan" and set auth.
 HEALTHCHECK --interval=3m --timeout=10s --start-period=15s --retries=3 \
   CMD node -e "fetch('http://127.0.0.1:18789/healthz').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
 CMD ["node", "openclaw.mjs", "gateway", "--allow-unconfigured"]
