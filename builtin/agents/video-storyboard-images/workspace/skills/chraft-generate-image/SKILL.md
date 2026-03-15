@@ -1,17 +1,19 @@
 ---
 name: chraft-generate-image
-description: Generate storyboard reference images via the Chraft media API. RESTRICTED to nano-banana-2 and nano-banana-pro models only. Use for batch storyboard frame generation.
+description: Generate images via the Chraft media API using the user's sandbox credentials. Use this skill whenever the user wants to create, generate, draw, or make any kind of image — even if they don't say "generate" explicitly. This skill handles authentication automatically via the sandbox user context, so there's no need to ask the user for API keys.
 ---
 
-# Chraft — Storyboard Image Generation
+# Chraft — Image Generation
 
-Generates storyboard reference images using the Chraft media API.
+This skill generates images by calling Chraft's `/api/openclaw/media/image` endpoint, then polls until the job completes and returns the image URLs.
 
-**Model restriction:** Only `nano-banana-2` and `nano-banana-pro` are permitted in this agent.
+The skill uses two calls: one to start the job, one (repeated) to check if it's done. Image generation is async because it takes 5–30 seconds depending on the model.
 
 ---
 
-## Load credentials
+## Load credentials from sandbox context
+
+Read the user context file — this is where the sandbox stores the Chraft API key. The key is already injected; there's nothing to configure.
 
 ```javascript
 import fs from "fs";
@@ -30,35 +32,24 @@ function authHeaders() {
 }
 ```
 
----
-
-## Allowed Models
-
-| Model             | When to use            |
-| ----------------- | ---------------------- |
-| `nano-banana-2`   | Default — most shots   |
-| `nano-banana-pro` | Hero shots, key frames |
-
-**Do not use any other model.** If a different model is requested, use `nano-banana-2` and note the substitution.
+If `chraftUseKey` is empty, tell the user their sandbox hasn't been linked to a Chraft account yet.
 
 ---
 
-## Step 1 — Start generation
+## Step 1 — Start the generation job
+
+Send a POST request with the model and prompt. The response immediately returns an `imageId` — the actual image isn't ready yet.
 
 ```javascript
-// model must be 'nano-banana-2' or 'nano-banana-pro'
-const ALLOWED_MODELS = ["nano-banana-2", "nano-banana-pro"];
-const safeModel = ALLOWED_MODELS.includes(model) ? model : "nano-banana-2";
-
 const res = await fetch(`${CHRAFT_BASE_URL}/api/openclaw/media/image`, {
   method: "POST",
   headers: authHeaders(),
   body: JSON.stringify({
-    model: safeModel,
+    model, // see references/image-models.md for options; default: "nano-banana-pro"
     prompt,
-    aspect_ratio: aspectRatio ?? "9:16",
+    aspect_ratio: aspectRatio ?? "1:1",
     quality: "hd",
-    num_outputs: 1,
+    num_outputs: numOutputs ?? 1, // 1–4
     output_format: "png",
   }),
 });
@@ -71,9 +62,24 @@ if (!res.ok) {
 const { imageId, creditsConsumed } = await res.json();
 ```
 
+See `references/image-models.md` for the full model list with descriptions.
+
+**Aspect ratio quick reference:**
+
+| Use case                  | Value  |
+| ------------------------- | ------ |
+| Square / avatar / social  | `1:1`  |
+| YouTube / landscape       | `16:9` |
+| TikTok / Reels / portrait | `9:16` |
+| Photo / print             | `3:2`  |
+| Pinterest / blog          | `2:3`  |
+| Cinematic ultra-wide      | `21:9` |
+
 ---
 
 ## Step 2 — Poll for completion
+
+Poll the status endpoint every 3 seconds. Image generation usually finishes within 30 seconds; allow up to 120 seconds before giving up.
 
 ```javascript
 const deadline = Date.now() + 120_000;
@@ -87,11 +93,12 @@ while (Date.now() < deadline) {
   const data = await poll.json();
 
   if (data.status === "completed" || data.status === "succeeded") {
-    return data.imageUrls[0];
+    return data.imageUrls; // string[] — one URL per output image
   }
   if (data.status === "failed" || data.status === "error") {
     throw new Error("Image generation failed");
   }
+  // any other status (processing, pending) → keep polling
 }
 
 throw new Error("Image generation timed out after 120s");
@@ -99,32 +106,44 @@ throw new Error("Image generation timed out after 120s");
 
 ---
 
-## Step 3 — Present result
+## Step 3 — Present results
+
+Show each image inline as a markdown image, followed by a brief summary:
 
 ```markdown
-![Shot N](https://...)
-Model: nano-banana-2 · Credits: N
+![Generated Image](https://...)
+
+Model: nano-banana-pro · Credits used: 10
 ```
 
----
-
-## Batch Processing
-
-For storyboard batches, process one shot at a time. After each image:
-
-1. Show the image inline
-2. Note the shot number and model used
-3. Continue to the next shot
-
-If a shot fails, log the error, skip it, and continue the batch.
+If multiple images were requested, show all of them.
 
 ---
 
-## Error Handling
+## Error handling
 
-| Status | Meaning              | Action                  |
-| ------ | -------------------- | ----------------------- |
-| `401`  | Key inactive         | Check sandbox pairing   |
-| `402`  | Insufficient credits | Notify user, stop batch |
-| `400`  | Invalid params       | Fix prompt, retry       |
-| `502`  | Provider error       | Retry once              |
+| Status | Meaning                                   | What to do                                   |
+| ------ | ----------------------------------------- | -------------------------------------------- |
+| `401`  | Key not found or inactive                 | Check that the sandbox is running and paired |
+| `400`  | Missing `model`/`prompt` or invalid model | Fix the request parameters                   |
+| `402`  | Insufficient credits                      | Tell the user to top up credits on Chraft    |
+| `502`  | AI provider error                         | Retry once; if persistent, report            |
+| `500`  | Database error                            | Retry once                                   |
+
+All errors return `{ success: false, error: "..." }`. A `402` also includes `errorType: "INSUFFICIENT_CREDITS"`.
+
+---
+
+## Example interactions
+
+**"Generate a futuristic city at night"**
+→ `model: "nano-banana-pro"`, defaults, prompt as-is
+
+**"Make a 16:9 landscape wallpaper of mountains at sunset"**
+→ `aspect_ratio: "16:9"`, prompt as-is
+
+**"Generate 4 logo concepts for a coffee brand"**
+→ `num_outputs: 4`, `aspect_ratio: "1:1"`
+
+**"Create a photorealistic portrait, high quality"**
+→ `model: "flux-2-pro"`, `aspect_ratio: "2:3"`

@@ -6,37 +6,39 @@ Pass the full model ID string as the `model` field. Short aliases (e.g. `kling3.
 
 ## Kling Series (Kuaishou)
 
-| Model ID                                                | Mode    | Max Duration          |
-| ------------------------------------------------------- | ------- | --------------------- |
-| `fal-ai/kling-video/v3/pro/text-to-video`               | T2V     | 15s                   |
-| `fal-ai/kling-video/v3/pro/image-to-video`              | I2V     | 15s                   |
-| `fal-ai/kling-video/v3/standard/text-to-video`          | T2V     | 15s — **default T2V** |
-| `fal-ai/kling-video/v3/standard/image-to-video`         | I2V     | 15s — **default I2V** |
-| `fal-ai/kling-video/v2.6/pro/text-to-video`             | T2V     | 10s                   |
-| `fal-ai/kling-video/v2.6/pro/image-to-video`            | I2V     | 10s                   |
-| `fal-ai/kling-video/v2.5-turbo/pro/text-to-video`       | T2V     | 10s                   |
-| `fal-ai/kling-video/v2.5-turbo/standard/image-to-video` | I2V     | 10s                   |
-| `kwaivgi/kling-v2.5-turbo-pro`                          | T2V+I2V | 10s                   |
-| `kwaivgi/kling-v2.1`                                    | I2V     | 10s                   |
-| `kwaivgi/kling-v2.1-master`                             | T2V+I2V | 10s                   |
-| `fal-ai/kling-video/v1.6/standard/text-to-video`        | T2V     | 10s                   |
-| `fal-ai/kling-video/v1.6/standard/image-to-video`       | I2V     | 10s                   |
-| `fal-ai/kling-video/o1/image-to-video`                  | I2V     | 10s                   |
-| `fal-ai/kling-video/o1/standard/image-to-video`         | I2V     | 10s                   |
-| `fal-ai/kling-video/o3/standard/reference-to-video`     | I2V     | 15s                   |
-| `fal-ai/kling-video/o3/pro/reference-to-video`          | I2V     | 15s                   |
+Kling 3 supported duration range: **3–15 s** (integer seconds).
+
+| Model ID                                                | Mode    | Max Duration |
+| ------------------------------------------------------- | ------- | ------------ |
+| `fal-ai/kling-video/v3/pro/text-to-video`               | T2V     | 15s          |
+| `fal-ai/kling-video/v3/pro/image-to-video`              | I2V     | 15s          |
+| `fal-ai/kling-video/v3/standard/text-to-video`          | T2V     | 15s          |
+| `fal-ai/kling-video/v3/standard/image-to-video`         | I2V     | 15s          |
+| `fal-ai/kling-video/v2.6/pro/text-to-video`             | T2V     | 10s          |
+| `fal-ai/kling-video/v2.6/pro/image-to-video`            | I2V     | 10s          |
+| `fal-ai/kling-video/v2.5-turbo/pro/text-to-video`       | T2V     | 10s          |
+| `fal-ai/kling-video/v2.5-turbo/standard/image-to-video` | I2V     | 10s          |
+| `kwaivgi/kling-v2.5-turbo-pro`                          | T2V+I2V | 10s          |
+| `kwaivgi/kling-v2.1`                                    | I2V     | 10s          |
+| `kwaivgi/kling-v2.1-master`                             | T2V+I2V | 10s          |
+| `fal-ai/kling-video/v1.6/standard/text-to-video`        | T2V     | 10s          |
+| `fal-ai/kling-video/v1.6/standard/image-to-video`       | I2V     | 10s          |
+| `fal-ai/kling-video/o1/image-to-video`                  | I2V     | 10s          |
+| `fal-ai/kling-video/o1/standard/image-to-video`         | I2V     | 10s          |
+| `fal-ai/kling-video/o3/standard/reference-to-video`     | I2V     | 15s          |
+| `fal-ai/kling-video/o3/pro/reference-to-video`          | I2V     | 15s          |
 
 ---
 
 ## Seedance Series (ByteDance)
 
-| Model ID                     | Mode    | Max Duration       |
-| ---------------------------- | ------- | ------------------ |
-| `seedance2/text-to-video`    | T2V     | 15s                |
-| `seedance2/image-to-video`   | I2V     | 15s                |
-| `seedance2/omni-reference`   | T2V+I2V | 15s                |
-| `bytedance/seedance-1.5-pro` | T2V+I2V | 12s — native audio |
-| `bytedance/seedance-1-pro`   | T2V+I2V | 12s                |
+| Model ID                     | Mode    | Max Duration                            |
+| ---------------------------- | ------- | --------------------------------------- |
+| `seedance2/text-to-video`    | T2V     | 15s                                     |
+| `seedance2/image-to-video`   | I2V     | 15s                                     |
+| `seedance2/omni-reference`   | T2V+I2V | 15s                                     |
+| `bytedance/seedance-1.5-pro` | T2V+I2V | 4–12s — native audio, flexible duration |
+| `bytedance/seedance-1-pro`   | T2V+I2V | 12s                                     |
 
 ---
 
@@ -51,12 +53,14 @@ Pass the full model ID string as the `model` field. Short aliases (e.g. `kling3.
 
 ## OpenAI Sora 2
 
+Supported durations: **4, 8, 12, 16, 20 s** (fixed steps only — do not pass arbitrary values).
+
 | Model ID                           | Mode | Max Duration |
 | ---------------------------------- | ---- | ------------ |
-| `fal-ai/sora-2/text-to-video`      | T2V  | 12s          |
-| `fal-ai/sora-2/text-to-video/pro`  | T2V  | 12s          |
-| `fal-ai/sora-2/image-to-video`     | I2V  | 12s          |
-| `fal-ai/sora-2/image-to-video/pro` | I2V  | 12s          |
+| `fal-ai/sora-2/text-to-video`      | T2V  | 20s          |
+| `fal-ai/sora-2/text-to-video/pro`  | T2V  | 20s          |
+| `fal-ai/sora-2/image-to-video`     | I2V  | 20s          |
+| `fal-ai/sora-2/image-to-video/pro` | I2V  | 20s          |
 
 ---
 

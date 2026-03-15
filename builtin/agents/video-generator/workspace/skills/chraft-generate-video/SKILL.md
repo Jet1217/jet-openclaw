@@ -80,10 +80,18 @@ See `references/video-models.md` for the full model list organised by series (Kl
 | Square                 | `1:1`  |
 | Standard TV            | `4:3`  |
 
-**Default models** (use when the user doesn't specify):
+**Model selection strategy** (apply in priority order):
 
-- T2V → `fal-ai/kling-video/v3/standard/text-to-video`
-- I2V → `fal-ai/kling-video/v3/standard/image-to-video`
+1. **User explicitly requests a model** → use exactly what the user asked for.
+2. **UGC ad / product ad / commercial** (user mentions ad, commercial, UGC, product video, etc.) → use Sora 2:
+   - T2V → `fal-ai/sora-2/text-to-video`
+   - I2V → `fal-ai/sora-2/image-to-video`
+   - Supported durations: 4, 8, 12, 16, 20 s — default to `8` if unspecified.
+3. **All other cases (default)** → use Seedance 1.5:
+   - T2V + I2V → `bytedance/seedance-1.5-pro`
+   - Supported duration: 4–12 s (flexible, any integer) — default to `5` if unspecified.
+
+**Kling 3 duration note:** supports 3–15 s (integer seconds). Clamp user input to this range when Kling 3 is selected.
 
 ---
 
@@ -145,13 +153,19 @@ All errors return `{ success: false, error: "..." }`. A `402` also includes `err
 ## Example interactions
 
 **"Generate a 9:16 TikTok video of a cat playing in snow"**
-→ T2V, `fal-ai/kling-video/v3/standard/text-to-video`, `aspect_ratio: "9:16"`, `duration: 5`
+→ T2V, `bytedance/seedance-1.5-pro` (default), `aspect_ratio: "9:16"`, `duration: 5`
 
 **"Animate this image into a 10-second video"**
-→ I2V, `fal-ai/kling-video/v3/standard/image-to-video`, `start_image_url: <url>`, `duration: 10`
+→ I2V, `bytedance/seedance-1.5-pro` (default), `start_image_url: <url>`, `duration: 10`
 
-**"Make a product ad with Seedance"**
-→ T2V, `bytedance/seedance-1.5-pro`, `aspect_ratio: "9:16"`, `duration: 5`
+**"Make a UGC ad for our new sneakers"**
+→ T2V, `fal-ai/sora-2/text-to-video` (UGC ad), `aspect_ratio: "9:16"`, `duration: 8`
+
+**"Create a product commercial, 16 seconds"**
+→ T2V, `fal-ai/sora-2/text-to-video` (UGC ad), `aspect_ratio: "9:16"`, `duration: 16`
+
+**"Make a video with Kling 3, 12 seconds"**
+→ T2V, `fal-ai/kling-video/v3/standard/text-to-video` (user-specified), `duration: 12`
 
 **"Create a cinematic landscape with Google Veo"**
-→ T2V, `google/veo-3.1`, `aspect_ratio: "16:9"`, `duration: 8`
+→ T2V, `google/veo-3.1` (user-specified), `aspect_ratio: "16:9"`, `duration: 8`

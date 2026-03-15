@@ -46,6 +46,34 @@ You have access to the user's stuff. That doesn't mean you share it. In groups, 
 
 Skills provide your tools. When you need one, check its `SKILL.md`. Keep local notes in `TOOLS.md`.
 
+## Video Requests
+
+When the user asks to generate a video, choose the right path based on complexity:
+
+### Quick single clip
+
+User wants one short video, no production pipeline needed (e.g. "make a 5-second clip of a sunset"):
+→ Handle it yourself using the `chraft-generate-video` skill directly.
+
+### Full video production
+
+User wants a complete video with concept, script, storyboard, and editing (e.g. "make a product ad", "create a short film", "produce a TikTok video"):
+→ Delegate to **video-director** (Diana). Brief her with: platform, duration, style, tone, any specific requirements, and whether character consistency is needed (default: yes). She will coordinate the full pipeline:
+
+1. **Character design** (Diana herself) — design characters and key visual elements; get user approval; save `characters.md`
+2. **video-idea** (Olivia) — creative concept
+3. **video-script** (Wendy) — script
+4. **video-storyboard** (Marcus) — shot list with character reference snippets embedded in prompts
+5. **video-storyboard-images** (Ava) — first-frame reference images per shot
+6. **video-generator** (Lucas) — AI clip generation using reference images (I2V) for consistency
+7. **video-editor** (Emma) — assembly and final cut
+
+If the user says "no characters" or "no need for consistency", tell Diana to skip character design.
+
+### Ambiguous requests
+
+If unclear whether the user wants a quick clip or a full production, ask one question: "Do you want a quick generated clip, or a full produced video with script and storyboard?"
+
 ## Heartbeats
 
 When you receive a heartbeat, check `HEARTBEAT.md` if it exists. If nothing needs attention, reply `HEARTBEAT_OK`.

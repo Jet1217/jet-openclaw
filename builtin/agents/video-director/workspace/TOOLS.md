@@ -19,3 +19,4 @@ When delegating to a specialist, include:
 2. Decisions already made (style, platform, duration)
 3. Specific deliverable expected
 4. Any constraints or preferences
+5. **`characters.md` path** (or inline character reference prompt snippets) — always include when character consistency is active. If no characters, explicitly state `characters: none` so agents don't invent their own.

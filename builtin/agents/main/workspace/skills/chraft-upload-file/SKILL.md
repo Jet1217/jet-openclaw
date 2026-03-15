@@ -1,6 +1,6 @@
 ---
 name: chraft-upload-file
-description: Upload a local sandbox file or a remote URL to Chraft's permanent cloud storage (R2). Use this skill whenever a tool has generated a file on disk (image, video, audio, PDF, etc.) and you need to share it with the user as a viewable/downloadable link. Also use it to permanently re-host a temporary CDN URL before it expires. Supports files up to 500 MB via presigned direct upload.
+description: Upload a local sandbox file or a remote URL to Chraft's permanent cloud storage (R2). Use this skill whenever a tool has generated a file on disk (image, video, audio, PDF, etc.) and you need to share it with the user as a viewable/downloadable link. Also use it to permanently re-host a temporary CDN URL before it expires. Supports files up to 2 GB via presigned direct upload.
 ---
 
 # Chraft — File Upload to Cloud Storage
@@ -10,11 +10,16 @@ All files are stored under `sandbox/{userId}/...` — fully isolated per user.
 
 The skill automatically picks the right upload strategy based on file size:
 
-| File size  | Strategy                                                      |
-| ---------- | ------------------------------------------------------------- |
-| < 4 MB     | Server buffer upload (one request)                            |
-| ≥ 4 MB     | Presigned URL → direct PUT to R2 (two requests, up to 500 MB) |
-| Remote URL | Server-side re-host (one request, up to 200 MB)               |
+| File size  | Strategy                                                                      |
+| ---------- | ----------------------------------------------------------------------------- |
+| < 4 MB     | Server buffer upload (one request)                                            |
+| ≥ 4 MB     | Presign by metadata → direct PUT to R2 → confirm (three requests, up to 2 GB) |
+| Remote URL | Server-side re-host (one request, up to 200 MB)                               |
+
+> **Why three requests for large files?**
+> Vercel enforces a 4.5 MB request body limit. Sending the file to the server first would fail.
+> Instead, we request a presigned URL using only the filename/size/type metadata, then PUT the
+> file directly from the sandbox to R2, completely bypassing Vercel.
 
 ---
 
@@ -39,67 +44,84 @@ function authHeaders(contentType = "application/json") {
 
 ---
 
-## uploadFile() — unified helper (use this in all skills)
+## Upload helpers — copy into your skill
 
-This single function handles all three modes automatically. Copy it into your skill.
+### `uploadUrl()` — re-host a remote URL (most common case)
+
+Use this when you have a URL from an AI tool (Kling, Fal, Replicate, etc.) and want to save it permanently.
 
 ```javascript
-/**
- * Upload a local file or remote URL to Chraft R2.
- * @param {string} source  - Local file path (e.g. '/tmp/out.mp4') or remote https:// URL
- * @param {string} [filenameHint]  - Override the stored filename (optional)
- * @returns {Promise<string>}  Public URL on success, throws on failure
- */
-async function uploadFile(source, filenameHint) {
-  // ── Remote URL: re-host via server ──────────────────────────────────────
-  if (source.startsWith("http://") || source.startsWith("https://")) {
+async function uploadUrl(remoteUrl, filenameHint) {
+  const res = await fetch(`${CHRAFT_BASE_URL}/api/openclaw/media/upload`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({ url: remoteUrl, filename: filenameHint }),
+  });
+  const data = await res.json();
+  if (!data.success) throw new Error(data.error || "URL re-host failed");
+  return data.url;
+}
+```
+
+### `uploadLocalFile()` — upload a local file from disk
+
+Use this when a tool (ffmpeg, etc.) has written a file to disk.
+Automatically handles small files (< 4 MB) and large files (≥ 4 MB, up to 2 GB).
+
+```javascript
+async function uploadLocalFile(filePath, filenameHint) {
+  const fileBuffer = fs.readFileSync(filePath);
+  const filename = filenameHint || path.basename(filePath);
+
+  // Small file: send directly through server
+  if (fileBuffer.length < 4 * 1024 * 1024) {
+    const formData = new FormData();
+    formData.append("file", new Blob([fileBuffer]), filename);
     const res = await fetch(`${CHRAFT_BASE_URL}/api/openclaw/media/upload`, {
       method: "POST",
-      headers: authHeaders(),
-      body: JSON.stringify({ url: source, filename: filenameHint }),
+      headers: { Authorization: `Bearer ${chraftUseKey}` },
+      body: formData,
     });
     const data = await res.json();
-    if (!data.success) throw new Error(data.error || "URL re-host failed");
+    if (!data.success) throw new Error(data.error || "Upload failed");
     return data.url;
   }
 
-  // ── Local file ───────────────────────────────────────────────────────────
-  const fileBuffer = fs.readFileSync(source);
-  const filename = filenameHint || path.basename(source);
-  const fileSizeBytes = fileBuffer.length;
+  // Large file: request presigned URL → PUT directly to R2
+  const extMap = {
+    mp4: "video/mp4",
+    mov: "video/quicktime",
+    webm: "video/webm",
+    mp3: "audio/mpeg",
+    wav: "audio/wav",
+    ogg: "audio/ogg",
+    png: "image/png",
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    webp: "image/webp",
+    gif: "image/gif",
+    pdf: "application/pdf",
+    zip: "application/zip",
+  };
+  const ext = filename.split(".").pop()?.toLowerCase();
+  const contentType = extMap[ext] || "application/octet-stream";
 
-  const formData = new FormData();
-  formData.append("file", new Blob([fileBuffer]), filename);
-
-  const res = await fetch(`${CHRAFT_BASE_URL}/api/openclaw/media/upload`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${chraftUseKey}` },
-    body: formData,
-  });
-  const data = await res.json();
-  if (!data.success) throw new Error(data.error || "Upload failed");
-
-  // ── Small file: done ─────────────────────────────────────────────────────
-  if (!data.needsPresign) return data.url;
-
-  // ── Large file: PUT directly to R2 with presigned URL ───────────────────
-  const putRes = await fetch(data.uploadUrl, {
-    method: "PUT",
-    headers: { "Content-Type": data.contentType },
-    body: fileBuffer,
-  });
-  if (!putRes.ok) throw new Error(`Presigned PUT failed: ${putRes.status} ${putRes.statusText}`);
-
-  // Confirm upload and get final public URL
-  const confirmRes = await fetch(`${CHRAFT_BASE_URL}/api/openclaw/media/upload/confirm`, {
+  const presignRes = await fetch(`${CHRAFT_BASE_URL}/api/openclaw/media/upload`, {
     method: "POST",
     headers: authHeaders(),
-    body: JSON.stringify({ key: data.key }),
+    body: JSON.stringify({ presign: true, filename, contentType, size: fileBuffer.length }),
   });
-  const confirmData = await confirmRes.json();
-  if (!confirmData.success) throw new Error(confirmData.error || "Confirm failed");
+  const presign = await presignRes.json();
+  if (!presign.success) throw new Error(presign.error || "Presign failed");
 
-  return confirmData.url;
+  const putRes = await fetch(presign.uploadUrl, {
+    method: "PUT",
+    headers: { "Content-Type": contentType },
+    body: fileBuffer,
+  });
+  if (!putRes.ok) throw new Error(`PUT to R2 failed: ${putRes.status}`);
+
+  return presign.publicUrl;
 }
 ```
 
@@ -107,27 +129,24 @@ async function uploadFile(source, filenameHint) {
 
 ## Usage examples
 
-**Upload a local file after a tool generates it:**
+**Re-host a URL from an AI tool (most common):**
 
 ```javascript
-// After ffmpeg generates a video
-const cloudUrl = await uploadFile("/tmp/output.mp4");
+// After Kling / Fal / Replicate returns a temporary URL
+const permanentUrl = await uploadUrl(videoUrls[0], "generated-video.mp4");
+```
+
+**Upload a local file generated by ffmpeg:**
+
+```javascript
+const cloudUrl = await uploadLocalFile("/tmp/output.mp4");
 // → "https://cdn.chraft.ai/sandbox/{userId}/videos/uuid-output.mp4"
 ```
 
 **Upload with a custom filename:**
 
 ```javascript
-const cloudUrl = await uploadFile("/workspace/render.png", "my-artwork.png");
-```
-
-**Re-host a temporary CDN URL permanently:**
-
-```javascript
-const permanentUrl = await uploadFile(
-  "https://replicate.delivery/pbxt/abc123/result.mp4",
-  "generated-video.mp4",
-);
+const cloudUrl = await uploadLocalFile("/workspace/render.png", "my-artwork.png");
 ```
 
 ---
@@ -148,7 +167,7 @@ const permanentUrl = await uploadFile(
 }
 ```
 
-**Large file** (`needsPresign: true`) — first response:
+**Large file** (`needsPresign: true`) — presign response (Mode D, metadata-only request):
 
 ```json
 {
@@ -159,17 +178,8 @@ const permanentUrl = await uploadFile(
   "key": "sandbox/{userId}/videos/uuid-output.mp4",
   "filename": "output.mp4",
   "contentType": "video/mp4",
-  "category": "videos"
-}
-```
-
-**Confirm response** (after presigned PUT):
-
-```json
-{
-  "success": true,
-  "url": "https://cdn.chraft.ai/sandbox/{userId}/videos/uuid-output.mp4",
-  "key": "sandbox/{userId}/videos/uuid-output.mp4"
+  "category": "videos",
+  "size": 104857600
 }
 ```
 
@@ -203,11 +213,11 @@ The chat UI automatically detects image and video URLs and renders them with a p
 
 ## Size limits
 
-| Path                               | Limit  |
-| ---------------------------------- | ------ |
-| Small file (server buffer, < 4 MB) | 4 MB   |
-| Large file (presigned PUT, ≥ 4 MB) | 500 MB |
-| URL re-host                        | 200 MB |
+| Path                                        | Limit  |
+| ------------------------------------------- | ------ |
+| Small file (server buffer, < 4 MB)          | 4 MB   |
+| Large file (presign metadata + PUT, ≥ 4 MB) | 2 GB   |
+| URL re-host                                 | 200 MB |
 
 ---
 
@@ -225,17 +235,17 @@ All errors return `{ success: false, error: "..." }`.
 
 ---
 
-## Full example — generate image, upload, present
+## Full example — generate video, re-host, present
 
 ```javascript
-// 1. Generate image with chraft-generate-image skill
-const { imageUrls } = await generateImage({ model: "nano-banana-pro", prompt: "..." });
+// 1. Generate video (returns a temporary CDN URL)
+const { videoUrls } = await generateVideo("a cat jumping over a fence");
 
-// 2. Re-host to permanent storage (imageUrls are already R2 URLs, but this ensures longevity)
-const permanentUrl = await uploadFile(imageUrls[0], "generated-image.png");
+// 2. Re-host to permanent storage — one request, done
+const permanentUrl = await uploadUrl(videoUrls[0], "cat-jump.mp4");
 
 // 3. Present in chat
-return `![Generated Image](${permanentUrl})`;
+return `![Cat Jump](${permanentUrl})`;
 ```
 
 ## Full example — run ffmpeg, upload result
@@ -246,8 +256,8 @@ import { execSync } from "child_process";
 // 1. Process video with ffmpeg
 execSync("ffmpeg -i /data/input.mp4 -vf scale=1280:-1 -c:v libx264 /tmp/output.mp4");
 
-// 2. Upload (automatically uses presigned path if > 10 MB)
-const cloudUrl = await uploadFile("/tmp/output.mp4", "processed-video.mp4");
+// 2. Upload local file (auto-selects small/large path based on file size)
+const cloudUrl = await uploadLocalFile("/tmp/output.mp4", "processed-video.mp4");
 
 // 3. Present in chat
 return `Processing complete!\n\n![Processed Video](${cloudUrl})`;
