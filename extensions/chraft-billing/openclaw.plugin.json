@@ -1,0 +1,27 @@
+{
+  "id": "chraft-billing",
+  "name": "Chraft Billing",
+  "description": "Reports LLM token usage to the Chraft backend for credit deduction. Fires on every llm_output event, including sub-agent calls. Authenticates using chraftUseKey from user-context.json.",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "baseUrl": {
+        "type": "string"
+      },
+      "timeoutMs": {
+        "type": "number"
+      }
+    }
+  },
+  "uiHints": {
+    "baseUrl": {
+      "label": "Chraft Base URL",
+      "help": "Base URL of the Chraft backend (e.g. https://api.chraft.ai). Falls back to CHRAFT_BASE_URL env var."
+    },
+    "timeoutMs": {
+      "label": "Request Timeout (ms)",
+      "help": "Timeout for usage report HTTP requests (default: 5000ms)."
+    }
+  }
+}
