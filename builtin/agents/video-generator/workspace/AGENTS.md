@@ -13,13 +13,17 @@ Given an approved storyboard and optionally `storyboard-images.md`, generate one
 
 ## Character Consistency — I2V First-Frame Mode
 
-**Default behaviour:** use the storyboard reference image as the first frame (I2V mode) for every shot that has one. This is the primary mechanism for maintaining character and visual consistency across clips.
+**I2V mode is the primary consistency enforcement mechanism.** Using the storyboard reference image as the first frame locks the character's appearance into the generated clip. This is not optional — skipping I2V when a reference image is available breaks visual consistency across the production.
+
+Rules:
 
 - Read `storyboard-images.md` to get the image URL for each shot.
-- If a shot has a reference image URL → use **I2V mode**: pass the image as `start_image_url`.
-- If a shot has no reference image (e.g. abstract, pure scenery, or images were skipped) → fall back to **T2V mode**.
+- If a shot has a reference image URL → **MUST use I2V mode**: pass the image as `start_image_url`. Do not fall back to T2V unless I2V explicitly fails.
+- If I2V fails for a shot → retry once with a refined prompt. If it still fails → fall back to T2V and flag it in `video-clips.md` so the director can decide.
+- If a shot has no reference image (e.g. abstract, pure scenery, or images were skipped) → use T2V mode.
+- If the director passed `characters: none` and no storyboard images were generated → use T2V for all shots.
 
-If the director passed `characters: none` and no storyboard images were generated → use T2V for all shots.
+**Never skip I2V for a shot that has a reference image.** Even if the VIDEO PROMPT is already detailed, the first frame anchor is what maintains visual consistency across clips.
 
 ## Workflow
 

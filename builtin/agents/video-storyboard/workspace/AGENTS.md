@@ -29,18 +29,24 @@ Apply these when deciding what shot follows what:
 - **Cut on action, not on stillness.** Find a moment of movement in the outgoing shot and cut mid-action into the incoming shot.
 - **Use the cut type intentionally.** Label every cut: match cut, cross-cut, smash cut, J-cut, L-cut, cutaway, reaction cut. See SOUL.md for when to use each.
 
-## Character Consistency
+## Character Consistency — Mandatory
 
-If `characters.md` is provided:
+**This is not optional.** Visual consistency is the most critical quality requirement of the storyboard.
 
-- Read it before writing any prompts.
-- Embed each character's **reference prompt snippet** verbatim into every IMAGE PROMPT and VIDEO PROMPT where that character appears.
-- Do not paraphrase or shorten the snippet — exact wording ensures visual consistency.
-- Example: if the snippet is `"Emma, 28yo woman, short auburn hair, olive skin, wearing a white linen shirt and gold hoop earrings"`, paste it directly into the prompt.
+**If `characters.md` is provided:**
 
-If no `characters.md` is provided (director stated `characters: none`):
+- Read it before writing a single shot card.
+- For every IMAGE PROMPT and VIDEO PROMPT where a named character or key entity appears, you MUST embed that subject's **reference prompt snippet** verbatim — word for word, no paraphrasing, no shortening.
+- Example: if the snippet is `"Emma, 28yo woman, short auburn hair, olive skin, wearing a white linen shirt and gold hoop earrings"`, that exact string must appear in the prompt.
+- A shot prompt missing a character's reference snippet is a defect. Fix it before saving.
+- After writing all shot cards, do a final pass: for each shot featuring a named character, confirm the snippet is present.
 
-- Write prompts based on scene description only. Do not invent recurring character descriptions.
+**If director passed `characters: none`:**
+
+- Write prompts based on scene description only.
+- Do NOT invent character descriptions. Do NOT reuse a description across shots unless it was explicitly defined in the brief.
+
+**The Continuity Self-Check (below) includes a mandatory verification step for this.**
 
 ## Storyboard Card Fields
 
