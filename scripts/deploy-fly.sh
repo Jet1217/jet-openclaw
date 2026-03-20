@@ -1,15 +1,57 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Deploy openclaw-agent:social to Fly.io registry
-# Usage: ./scripts/deploy-fly.sh [extensions]
-# Example: ./scripts/deploy-fly.sh "telegram slack discord whatsapp feishu memory-core"
+# Deploy openclaw-agent to Fly.io registry
+# Usage: ./scripts/deploy-fly.sh [--env beta|prod] [extensions]
+# Examples:
+#   ./scripts/deploy-fly.sh                                                  # prod, default extensions
+#   ./scripts/deploy-fly.sh --env beta                                       # beta, default extensions
+#   ./scripts/deploy-fly.sh --env beta "telegram slack discord"              # beta, custom extensions
+#   ./scripts/deploy-fly.sh "telegram slack discord whatsapp feishu"        # prod, custom extensions
 
-EXTENSIONS="${1:-telegram slack discord whatsapp feishu memory-core}"
-GCR_IMAGE="gcr.io/chraftclaw/openclaw-agent:social"
-FLY_IMAGE="registry.fly.io/clawpod-registry:latest"
+ENV="prod"
+EXTENSIONS=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --env)
+      ENV="$2"
+      shift 2
+      ;;
+    --beta)
+      ENV="beta"
+      shift
+      ;;
+    --prod)
+      ENV="prod"
+      shift
+      ;;
+    *)
+      EXTENSIONS="$1"
+      shift
+      ;;
+  esac
+done
+
+EXTENSIONS="${EXTENSIONS:-telegram slack discord whatsapp feishu memory-core}"
+
+case "$ENV" in
+  beta)
+    GCR_IMAGE="gcr.io/chraftclaw/openclaw-agent:beta"
+    FLY_IMAGE="registry.fly.io/clawpod-registry:beta"
+    ;;
+  prod)
+    GCR_IMAGE="gcr.io/chraftclaw/openclaw-agent:social"
+    FLY_IMAGE="registry.fly.io/clawpod-registry:latest"
+    ;;
+  *)
+    echo "Error: unknown --env value '${ENV}'. Use 'beta' or 'prod'."
+    exit 1
+    ;;
+esac
 
 echo "==> Building Docker image..."
+echo "    Env:        ${ENV}"
 echo "    Extensions: ${EXTENSIONS}"
 echo "    Target:     ${GCR_IMAGE}"
 echo ""
