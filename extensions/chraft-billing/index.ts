@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { OpenClawPluginApi } from "openclaw/plugin-sdk/chraft-billing";
+import type { OpenClawPluginApi } from "openclaw/plugin-sdk/core";
 
 type ChraftBillingConfig = {
   baseUrl?: string;

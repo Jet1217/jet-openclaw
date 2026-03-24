@@ -8,9 +8,11 @@
  *  - Session registry helpers (releaseWsSession, hasWsSession)
  */
 
+import { createAssistantMessageEventStream } from "@mariozechner/pi-ai";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ResponseObject } from "./openai-ws-connection.js";
 import {
+  __testing as openAIWsStreamTesting,
   buildAssistantMessageFromResponse,
   convertMessagesToInputItems,
   convertTools,
@@ -168,40 +170,17 @@ const { MockManager } = vi.hoisted(() => {
   return { MockManager: TrackedMockManager };
 });
 
-vi.mock("./openai-ws-connection.js", async (importOriginal) => {
-  const original = await importOriginal<typeof import("./openai-ws-connection.js")>();
-  return {
-    ...original,
-    OpenAIWebSocketManager: MockManager,
-  };
-});
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Mock pi-ai
-// ─────────────────────────────────────────────────────────────────────────────
-
 // Track if streamSimple (HTTP fallback) was called
 const streamSimpleCalls: Array<{ model: unknown; context: unknown }> = [];
-
-vi.mock("@mariozechner/pi-ai", async (importOriginal) => {
-  const original = await importOriginal<typeof import("@mariozechner/pi-ai")>();
-
-  const mockStreamSimple = vi.fn((model: unknown, context: unknown) => {
-    streamSimpleCalls.push({ model, context });
-    // Return a minimal AssistantMessageEventStream-like async iterable
-    const stream = original.createAssistantMessageEventStream();
-    queueMicrotask(() => {
-      const msg = makeFakeAssistantMessage("http fallback response");
-      stream.push({ type: "done", reason: "stop", message: msg });
-      stream.end();
-    });
-    return stream;
+const mockStreamSimple = vi.fn((model: unknown, context: unknown) => {
+  streamSimpleCalls.push({ model, context });
+  const stream = createAssistantMessageEventStream();
+  queueMicrotask(() => {
+    const msg = makeFakeAssistantMessage("http fallback response");
+    stream.push({ type: "done", reason: "stop", message: msg });
+    stream.end();
   });
-
-  return {
-    ...original,
-    streamSimple: mockStreamSimple,
-  };
+  return stream;
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -362,18 +341,16 @@ describe("convertTools", () => {
     expect(result).toHaveLength(1);
     expect(result[0]).toMatchObject({
       type: "function",
-      function: {
-        name: "exec",
-        description: "Run a command",
-        parameters: { type: "object", properties: { cmd: { type: "string" } } },
-      },
+      name: "exec",
+      description: "Run a command",
+      parameters: { type: "object", properties: { cmd: { type: "string" } } },
     });
   });
 
   it("handles tools without description", () => {
     const tools = [{ name: "ping", description: "", parameters: {} }];
     const result = convertTools(tools as Parameters<typeof convertTools>[0]);
-    expect(result[0]?.function?.name).toBe("ping");
+    expect(result[0]?.name).toBe("ping");
   });
 });
 
@@ -445,6 +422,35 @@ describe("convertMessagesToInputItems", () => {
       type: "message",
       role: "assistant",
       content: "Let me run that.",
+      phase: "commentary",
+    });
+  });
+
+  it("preserves assistant phase from textSignature metadata without local phase field", () => {
+    const msg = {
+      role: "assistant" as const,
+      content: [
+        {
+          type: "text" as const,
+          text: "Working on it.",
+          textSignature: JSON.stringify({ v: 1, id: "msg_sig", phase: "commentary" }),
+        },
+      ],
+      stopReason: "stop",
+      api: "openai-responses",
+      provider: "openai",
+      model: "gpt-5.2",
+      usage: {},
+      timestamp: 0,
+    };
+    const items = convertMessagesToInputItems([msg] as Parameters<
+      typeof convertMessagesToInputItems
+    >[0]);
+    expect(items).toHaveLength(1);
+    expect(items[0]).toMatchObject({
+      type: "message",
+      role: "assistant",
+      content: "Working on it.",
       phase: "commentary",
     });
   });
@@ -553,6 +559,34 @@ describe("convertMessagesToInputItems", () => {
     >[0]);
     expect(items).toHaveLength(1);
     expect((items[0] as { content?: unknown }).content).toBe("Here is my answer.");
+  });
+
+  it("replays reasoning blocks from thinking signatures", () => {
+    const msg = {
+      role: "assistant" as const,
+      content: [
+        {
+          type: "thinking" as const,
+          thinking: "internal reasoning...",
+          thinkingSignature: JSON.stringify({
+            type: "reasoning",
+            id: "rs_test",
+            summary: [],
+          }),
+        },
+        { type: "text" as const, text: "Here is my answer." },
+      ],
+      stopReason: "stop",
+      api: "openai-responses",
+      provider: "openai",
+      model: "gpt-5.2",
+      usage: {},
+      timestamp: 0,
+    };
+    const items = convertMessagesToInputItems([msg] as Parameters<
+      typeof convertMessagesToInputItems
+    >[0]);
+    expect(items.map((item) => item.type)).toEqual(["reasoning", "message"]);
   });
 
   it("returns empty array for empty messages", () => {
@@ -667,6 +701,10 @@ describe("createOpenAIWebSocketStreamFn", () => {
   beforeEach(() => {
     MockManager.reset();
     streamSimpleCalls.length = 0;
+    openAIWsStreamTesting.setDepsForTest({
+      createManager: (() => new MockManager()) as never,
+      streamSimple: mockStreamSimple,
+    });
   });
 
   afterEach(() => {
@@ -685,6 +723,7 @@ describe("createOpenAIWebSocketStreamFn", () => {
     releaseWsSession("sess-store-default");
     releaseWsSession("sess-store-compat");
     releaseWsSession("sess-max-tokens-zero");
+    openAIWsStreamTesting.setDepsForTest();
   });
 
   it("connects to the WebSocket on first call", async () => {
@@ -1281,10 +1320,15 @@ describe("createOpenAIWebSocketStreamFn", () => {
 describe("releaseWsSession / hasWsSession", () => {
   beforeEach(() => {
     MockManager.reset();
+    openAIWsStreamTesting.setDepsForTest({
+      createManager: (() => new MockManager()) as never,
+      streamSimple: mockStreamSimple,
+    });
   });
 
   afterEach(() => {
     releaseWsSession("registry-test");
+    openAIWsStreamTesting.setDepsForTest();
   });
 
   it("hasWsSession returns false for unknown session", () => {
