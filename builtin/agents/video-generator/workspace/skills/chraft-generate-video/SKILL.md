@@ -5,7 +5,7 @@ description: Generate videos via the Chraft media API. Use this skill whenever t
 
 # Chraft — Video Generation
 
-This skill generates videos by calling Chraft's `/api/openclaw/media/video` endpoint, then polls until the job completes. It supports both text-to-video (T2V) and image-to-video (I2V).
+This skill generates videos by calling Chraft's `/api/openclaw/media/video` endpoint, then polls until the job completes. It supports text-to-video (T2V), image-to-video first-frame mode (I2V), and start+end-frame mode.
 
 Videos take longer than images — typically 1–3 minutes — because the AI model has to render multiple frames. The polling loop handles this transparently.
 
@@ -13,12 +13,14 @@ Videos take longer than images — typically 1–3 minutes — because the AI mo
 
 ## Detect the mode
 
-| Situation                                | Mode                     |
-| ---------------------------------------- | ------------------------ |
-| User describes a scene in text, no image | **Text-to-Video (T2V)**  |
-| User provides an image URL or file path  | **Image-to-Video (I2V)** |
+| Situation                                              | Mode                              |
+| ------------------------------------------------------ | --------------------------------- |
+| User describes a scene in text, no image               | **Text-to-Video (T2V)**           |
+| User provides one image URL or file path               | **Image-to-Video (I2V)**          |
+| User provides both start frame and end frame image URL | **Start+End-Frame Video (I2V++)** |
 
-For I2V, upload the image to get a URL if only a local path is provided, then pass it as `start_image_url`.
+For I2V, upload the image to get a URL if only a local path is provided, then pass it as `start_image_url`.  
+For start+end-frame mode, pass both `start_image_url` and `end_image_url`.
 
 ---
 
@@ -55,6 +57,7 @@ const res = await fetch(`${CHRAFT_BASE_URL}/api/openclaw/media/video`, {
     model, // see references/video-models.md for options
     prompt,
     start_image_url: startImageUrl, // I2V only — omit for T2V
+    end_image_url: endImageUrl, // optional: use with start_image_url for start+end-frame mode
     duration: duration ?? 5, // seconds; respect each model's max
     aspect_ratio: aspectRatio ?? "9:16",
     resolution: "hd",
@@ -157,6 +160,9 @@ All errors return `{ success: false, error: "..." }`. A `402` also includes `err
 
 **"Animate this image into a 10-second video"**
 → I2V, `bytedance/seedance-1.5-pro` (default), `start_image_url: <url>`, `duration: 10`
+
+**"Generate a clip that starts from frame A and ends on frame B"**
+→ start+end-frame mode, `bytedance/seedance-1.5-pro` (default), `start_image_url: <start-url>`, `end_image_url: <end-url>`
 
 **"Make a UGC ad for our new sneakers"**
 → T2V, `fal-ai/sora-2/text-to-video` (UGC ad), `aspect_ratio: "9:16"`, `duration: 8`

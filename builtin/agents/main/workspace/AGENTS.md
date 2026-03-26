@@ -60,15 +60,15 @@ User wants one short video, no production pipeline needed (e.g. "make a 5-second
 User wants a complete video with concept, script, storyboard, and editing (e.g. "make a product ad", "create a short film", "produce a TikTok video"):
 → Delegate to **video-director** (Diana). Brief her with: platform, duration, style, tone, any specific requirements, and whether character consistency is needed (default: yes). She will coordinate the full pipeline:
 
-1. **Character design** (Diana herself) — design characters and key visual elements; get user approval; save `characters.md`
+1. **video-asset-designer** (Nora) — design key characters, key objects, and key scenes; generate reference images; save `characters.md`, `key-assets.md`, `key-scenes.md`
 2. **video-idea** (Olivia) — creative concept
 3. **video-script** (Wendy) — script
-4. **video-storyboard** (Marcus) — shot list with character reference snippets embedded in prompts
-5. **video-storyboard-images** (Ava) — first-frame reference images per shot
-6. **video-generator** (Lucas) — AI clip generation using reference images (I2V) for consistency
+4. **video-storyboard** (Marcus) — shot list with asset reference snippets embedded in prompts
+5. **video-storyboard-images** (Ava) — per-shot keyframes (first frame required, optional last frame when needed)
+6. **video-generator** (Lucas) — AI clip generation using keyframes (I2V first-frame or start+end-frame)
 7. **video-editor** (Emma) — assembly and final cut
 
-If the user says "no characters" or "no need for consistency", tell Diana to skip character design.
+If the user says "no recurring subjects" or "no need for consistency", tell Diana to skip asset design.
 
 ### Ambiguous requests
 

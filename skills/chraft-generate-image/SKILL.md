@@ -45,7 +45,7 @@ const res = await fetch(`${CHRAFT_BASE_URL}/api/openclaw/media/image`, {
   method: "POST",
   headers: authHeaders(),
   body: JSON.stringify({
-    model, // see references/image-models.md for options; default: "nano-banana-pro"
+    model, // see references/image-models.md for options; default: "nano-banana-2"
     prompt,
     aspect_ratio: aspectRatio ?? "1:1",
     quality: "hd",
@@ -113,7 +113,7 @@ Show each image inline as a markdown image, followed by a brief summary:
 ```markdown
 ![Generated Image](https://...)
 
-Model: nano-banana-pro · Credits used: 10
+Model: nano-banana-2 · Credits used: 10
 ```
 
 If multiple images were requested, show all of them.
@@ -137,7 +137,7 @@ All errors return `{ success: false, error: "..." }`. A `402` also includes `err
 ## Example interactions
 
 **"Generate a futuristic city at night"**
-→ `model: "nano-banana-pro"`, defaults, prompt as-is
+→ `model: "nano-banana-2"`, defaults, prompt as-is
 
 **"Make a 16:9 landscape wallpaper of mountains at sunset"**
 → `aspect_ratio: "16:9"`, prompt as-is
