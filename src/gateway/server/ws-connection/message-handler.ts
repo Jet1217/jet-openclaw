@@ -33,6 +33,7 @@ import {
   mintCanvasCapabilityToken,
 } from "../../canvas-capability.js";
 import { normalizeDeviceMetadataForAuth } from "../../device-auth.js";
+import { CLI_DEFAULT_OPERATOR_SCOPES } from "../../method-scopes.js";
 import {
   isLocalishHost,
   isLoopbackAddress,
@@ -547,6 +548,21 @@ export function attachGatewayWsMessageHandler(params: {
                 (authMethod === "token" || authMethod === "password" || trustedProxyAuthOk)))
           ) {
             clearUnboundScopes();
+          }
+          // Token-authenticated operators with no device identity and no declared
+          // scopes (cleared above) receive the CLI default set so they can use all
+          // standard operator methods without needing a device pairing.
+          // This restores pre-v7b61 behavior for backend / web clients that
+          // authenticate with a shared secret but don't present a device identity.
+          if (
+            !device &&
+            decision.kind === "allow" &&
+            scopes.length === 0 &&
+            (authMethod === "token" || authMethod === "password") &&
+            role === "operator"
+          ) {
+            scopes = [...CLI_DEFAULT_OPERATOR_SCOPES];
+            connectParams.scopes = scopes;
           }
           if (decision.kind === "allow") {
             return true;

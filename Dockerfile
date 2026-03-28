@@ -241,6 +241,9 @@ RUN ln -sf /app/openclaw.mjs /usr/local/bin/openclaw \
  && chmod 755 /app/openclaw.mjs
 
 ENV NODE_ENV=production
+# Store jiti's transpile cache on the persistent volume so it survives restarts
+# and is always owned by the 'node' user (not polluted by root-owned Fly execs).
+ENV JITI_CACHE_DIR=/data/.jiti-cache
 
 # Security hardening: Run as non-root user
 # The node:24-bookworm image includes a 'node' user (uid 1000)
