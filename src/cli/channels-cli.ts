@@ -3,7 +3,7 @@ import { danger } from "../globals.js";
 import { defaultRuntime } from "../runtime.js";
 import { formatDocsLink } from "../terminal/links.js";
 import { theme } from "../terminal/theme.js";
-import { runChannelLogin, runChannelLogout } from "./channel-auth.js";
+import { runChannelLogin, runChannelLoginQr, runChannelLogout } from "./channel-auth.js";
 import { formatCliChannelOptions } from "./channel-options.js";
 import { runCommandWithRuntime } from "./cli-utils.js";
 import { hasExplicitOptions } from "./command-options.js";
@@ -226,17 +226,38 @@ export function registerChannelsCli(program: Command) {
     .option("--channel <channel>", "Channel alias (auto when only one is configured)")
     .option("--account <id>", "Account id (accountId)")
     .option("--verbose", "Verbose connection logs", false)
+    .option(
+      "--json",
+      "Non-interactive mode: emit QR as a JSON line {qr_url,status,message} on stdout and exit",
+      false,
+    )
+    .option("--force", "Re-generate QR even if a session already exists (--json only)", false)
+    .option("--timeout-ms <ms>", "QR wait timeout in milliseconds (--json only)", "30000")
     .action(async (opts) => {
-      await runChannelsCommandWithDanger(async () => {
-        await runChannelLogin(
-          {
-            channel: opts.channel as string | undefined,
-            account: opts.account as string | undefined,
-            verbose: Boolean(opts.verbose),
-          },
-          defaultRuntime,
-        );
-      }, "Channel login failed");
+      if (opts.json) {
+        await runChannelsCommandWithDanger(async () => {
+          await runChannelLoginQr(
+            {
+              channel: opts.channel as string | undefined,
+              account: opts.account as string | undefined,
+              force: Boolean(opts.force),
+              timeoutMs: Number(opts.timeoutMs) || 30_000,
+            },
+            defaultRuntime,
+          );
+        }, "Channel login failed");
+      } else {
+        await runChannelsCommandWithDanger(async () => {
+          await runChannelLogin(
+            {
+              channel: opts.channel as string | undefined,
+              account: opts.account as string | undefined,
+              verbose: Boolean(opts.verbose),
+            },
+            defaultRuntime,
+          );
+        }, "Channel login failed");
+      }
     });
 
   channels

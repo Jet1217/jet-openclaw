@@ -156,6 +156,59 @@ export async function runChannelLogin(
   });
 }
 
+/**
+ * Non-interactive QR login flow.
+ *
+ * Calls `plugin.auth.loginQr` if available and writes a single JSON line to
+ * stdout so that automation (e.g. fly-sandbox-service) can capture the QR
+ * data URL without a TTY.
+ *
+ * Output shape (one JSON line on stdout):
+ *   {"qr_url":"data:image/png;base64,...","status":"pending_scan","message":"..."}
+ * or, if the channel is already linked:
+ *   {"connected":true,"message":"..."}
+ */
+export async function runChannelLoginQr(
+  opts: ChannelAuthOptions & { force?: boolean; timeoutMs?: number },
+  runtime: RuntimeEnv = defaultRuntime,
+) {
+  const loadedCfg = loadConfig();
+  const { cfg, configChanged, channelInput, plugin } = await resolveChannelPluginForMode(
+    opts,
+    "login",
+    loadedCfg,
+    runtime,
+  );
+  if (configChanged) {
+    await writeConfigFile(cfg);
+  }
+  const loginQr = plugin.auth?.loginQr;
+  if (!loginQr) {
+    throw new Error(`Channel ${channelInput} does not support --json QR login`);
+  }
+  const { accountId } = resolveAccountContext(plugin, opts, cfg);
+  const result = await loginQr({
+    cfg,
+    accountId,
+    runtime,
+    force: Boolean(opts.force),
+    timeoutMs: opts.timeoutMs,
+  });
+
+  const out: Record<string, unknown> = { message: result.message };
+  if (result.qrDataUrl) {
+    out.qr_url = result.qrDataUrl;
+    out.status = "pending_scan";
+  } else if (result.connected) {
+    out.connected = true;
+    out.status = "connected";
+  } else {
+    out.status = "error";
+  }
+  // Single JSON line — automation parses stdout line by line.
+  process.stdout.write(JSON.stringify(out) + "\n");
+}
+
 export async function runChannelLogout(
   opts: ChannelAuthOptions,
   runtime: RuntimeEnv = defaultRuntime,

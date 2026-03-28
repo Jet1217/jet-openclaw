@@ -187,6 +187,20 @@ export const whatsappPlugin: ChannelPlugin<ResolvedWhatsAppAccount> =
             await loadWhatsAppChannelRuntime()
           ).loginWeb(Boolean(verbose), undefined, runtime, resolvedAccountId);
         },
+        loginQr: async ({ cfg, accountId, runtime, force, timeoutMs }) => {
+          const resolvedAccountId =
+            accountId?.trim() ||
+            whatsappPlugin.config.defaultAccountId?.(cfg) ||
+            DEFAULT_ACCOUNT_ID;
+          return await (
+            await loadWhatsAppChannelRuntime()
+          ).startWebLoginWithQr({
+            accountId: resolvedAccountId,
+            runtime,
+            force: Boolean(force),
+            timeoutMs,
+          });
+        },
       },
       heartbeat: {
         checkReady: async ({ cfg, accountId, deps }) => {

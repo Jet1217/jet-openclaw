@@ -367,6 +367,19 @@ export type ChannelAuthAdapter = {
     verbose?: boolean;
     channelInput?: string | null;
   }) => Promise<void>;
+  /**
+   * Non-interactive QR login variant.
+   * Returns the QR as a PNG data URL so callers (e.g. sandbox control-plane)
+   * can surface it to users without a TTY.  The implementation should print
+   * nothing to stdout/stderr and only return the structured result.
+   */
+  loginQr?: (params: {
+    cfg: OpenClawConfig;
+    accountId?: string | null;
+    runtime: RuntimeEnv;
+    force?: boolean;
+    timeoutMs?: number;
+  }) => Promise<{ qrDataUrl?: string; connected?: boolean; message: string }>;
 };
 
 export type ChannelHeartbeatAdapter = {

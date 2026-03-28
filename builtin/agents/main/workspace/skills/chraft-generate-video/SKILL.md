@@ -1,11 +1,11 @@
 ---
 name: chraft-generate-video
-description: Generate videos via the Chraft media API. Use this skill whenever the user wants to create, generate, make, or animate a video — including text-to-video (describe a scene) and image-to-video (animate an existing image). Authentication is handled automatically from the sandbox user context; no API key setup required. Use this even if the user says "make a clip", "create a reel", or "animate this photo".
+description: Generate videos via the Ploval media API. Use this skill whenever the user wants to create, generate, make, or animate a video — including text-to-video (describe a scene) and image-to-video (animate an existing image). Authentication is handled automatically from the sandbox user context; no API key setup required. Use this even if the user says "make a clip", "create a reel", or "animate this photo".
 ---
 
-# Chraft — Video Generation
+# Ploval — Video Generation
 
-This skill generates videos by calling Chraft's `/api/openclaw/media/video` endpoint, then polls until the job completes. It supports text-to-video (T2V), image-to-video first-frame mode (I2V), and start+end-frame mode.
+This skill generates videos by calling Ploval's `/api/openclaw/media/video` endpoint, then polls until the job completes. It supports both text-to-video (T2V) and image-to-video (I2V).
 
 Videos take longer than images — typically 1–3 minutes — because the AI model has to render multiple frames. The polling loop handles this transparently.
 
@@ -13,14 +13,12 @@ Videos take longer than images — typically 1–3 minutes — because the AI mo
 
 ## Detect the mode
 
-| Situation                                              | Mode                              |
-| ------------------------------------------------------ | --------------------------------- |
-| User describes a scene in text, no image               | **Text-to-Video (T2V)**           |
-| User provides one image URL or file path               | **Image-to-Video (I2V)**          |
-| User provides both start frame and end frame image URL | **Start+End-Frame Video (I2V++)** |
+| Situation                                | Mode                     |
+| ---------------------------------------- | ------------------------ |
+| User describes a scene in text, no image | **Text-to-Video (T2V)**  |
+| User provides an image URL or file path  | **Image-to-Video (I2V)** |
 
-For I2V, upload the image to get a URL if only a local path is provided, then pass it as `start_image_url`.  
-For start+end-frame mode, pass both `start_image_url` and `end_image_url`.
+For I2V, upload the image to get a URL if only a local path is provided, then pass it as `start_image_url`.
 
 ---
 
@@ -33,7 +31,7 @@ import path from "path";
 const stateDir = process.env.OPENCLAW_STATE_DIR || "/data";
 const ctx = JSON.parse(fs.readFileSync(path.join(stateDir, "user-context.json"), "utf8"));
 const { chraftUseKey } = ctx;
-const CHRAFT_BASE_URL = process.env.CHRAFT_BASE_URL || "https://chraft.ai";
+const CHRAFT_BASE_URL = process.env.CHRAFT_BASE_URL || "https://ploval.ai";
 
 function authHeaders() {
   return {
@@ -43,7 +41,7 @@ function authHeaders() {
 }
 ```
 
-If `chraftUseKey` is empty, tell the user their sandbox hasn't been linked to a Chraft account yet.
+If `chraftUseKey` is empty, tell the user their sandbox hasn't been linked to a Ploval account yet.
 
 ---
 
@@ -57,7 +55,7 @@ const res = await fetch(`${CHRAFT_BASE_URL}/api/openclaw/media/video`, {
     model, // see references/video-models.md for options
     prompt,
     start_image_url: startImageUrl, // I2V only — omit for T2V
-    end_image_url: endImageUrl, // optional: use with start_image_url for start+end-frame mode
+    end_image_url: endImageUrl, // PixVerse transition only — omit unless first+last frame interpolation
     duration: duration ?? 5, // seconds; respect each model's max
     aspect_ratio: aspectRatio ?? "9:16",
     resolution: "hd",
@@ -72,7 +70,7 @@ if (!res.ok) {
 const { videoId, creditsConsumed } = await res.json();
 ```
 
-See `references/video-models.md` for the full model list organised by series (Kling, Seedance, Veo, Sora 2, Hailuo, Wan, Vidu, Grok).
+See `references/video-models.md` for the full model list organised by series (Kling, Seedance, Veo, Sora 2, Hailuo, Wan, Vidu, Grok, PixVerse).
 
 **Aspect ratio quick reference:**
 
@@ -95,6 +93,10 @@ See `references/video-models.md` for the full model list organised by series (Kl
    - Supported duration: 4–12 s (flexible, any integer) — default to `5` if unspecified.
 
 **Kling 3 duration note:** supports 3–15 s (integer seconds). Clamp user input to this range when Kling 3 is selected.
+
+**PixVerse duration note:** v5 supports 5 or 8 s only; v5.5 and v5.6 support 5, 8, or 10 s. For 10 s clips, `resolution` must be `hd` (720p) — `fhd` (1080p) is not supported at 10 s. v5 has no audio; v5.5 and v5.6 auto-generate ambient audio.
+
+**PixVerse transition (first+last frame):** When the user provides two images (start and end), pass both `start_image_url` and `end_image_url` with a PixVerse I2V model to interpolate between the two frames.
 
 ---
 
@@ -145,7 +147,7 @@ Model: kling-v3-standard · Duration: 5s · Credits used: 42
 | ------ | ----------------------------------------- | -------------------------------------------- |
 | `401`  | Key not found or inactive                 | Check that the sandbox is running and paired |
 | `400`  | Missing `model`/`prompt` or invalid model | Fix the request parameters                   |
-| `402`  | Insufficient credits                      | Tell the user to top up credits on Chraft    |
+| `402`  | Insufficient credits                      | Tell the user to top up credits on Ploval    |
 | `502`  | AI provider error                         | Retry once; if persistent, report            |
 | `500`  | Database error                            | Retry once                                   |
 
@@ -160,9 +162,6 @@ All errors return `{ success: false, error: "..." }`. A `402` also includes `err
 
 **"Animate this image into a 10-second video"**
 → I2V, `bytedance/seedance-1.5-pro` (default), `start_image_url: <url>`, `duration: 10`
-
-**"Generate a clip that starts from frame A and ends on frame B"**
-→ start+end-frame mode, `bytedance/seedance-1.5-pro` (default), `start_image_url: <start-url>`, `end_image_url: <end-url>`
 
 **"Make a UGC ad for our new sneakers"**
 → T2V, `fal-ai/sora-2/text-to-video` (UGC ad), `aspect_ratio: "9:16"`, `duration: 8`

@@ -1,4 +1,4 @@
-# Chraft Video Models
+# Ploval Video Models
 
 Pass the full model ID string as the `model` field. Short aliases (e.g. `kling3.0-pro`) are also accepted by the API.
 
@@ -103,3 +103,25 @@ Supported durations: **4, 8, 12, 16, 20 s** (fixed steps only — do not pass ar
 | --------------------------------------- | ---- | ------------ |
 | `xai/grok-imagine-video/text-to-video`  | T2V  | 15s          |
 | `xai/grok-imagine-video/image-to-video` | I2V  | 15s          |
+
+---
+
+## PixVerse
+
+Supported durations: **5, 8 s** for v5; **5, 8, 10 s** for v5.5 and v5.6 (10s only available at 720p, not 1080p).
+
+| Model ID            | Mode | Max Duration | Notes                                      |
+| ------------------- | ---- | ------------ | ------------------------------------------ |
+| `pixverse/v5/t2v`   | T2V  | 8s           | No audio                                   |
+| `pixverse/v5/i2v`   | I2V  | 8s           | No audio; pass `start_image_url`           |
+| `pixverse/v5.5/t2v` | T2V  | 10s          | Native audio (ambient + music); multi-clip |
+| `pixverse/v5.5/i2v` | I2V  | 10s          | Native audio; pass `start_image_url`       |
+| `pixverse/v5.6/t2v` | T2V  | 10s          | Native audio; highest quality in PixVerse  |
+| `pixverse/v5.6/i2v` | I2V  | 10s          | Native audio; pass `start_image_url`       |
+
+**Transition (first + last frame):** Pass both `start_image_url` and `end_image_url` with any I2V model to interpolate between two frames. Supported on v5, v5.5, and v5.6.
+
+**Resolution (`resolution` field):**
+
+- `hd` = 720p (default, supported for all durations)
+- `fhd` = 1080p (supported up to 8s only; not available for 10s clips)
