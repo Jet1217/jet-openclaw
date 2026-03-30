@@ -18,17 +18,22 @@ Produce stable visual anchor specs and reference images for:
 
 You do not write scripts or storyboards. You only produce anchor artifacts that downstream agents must reference.
 
+## Project Isolation
+
+The task brief from the director includes `project: <slug>`. All output files MUST be saved under `projects/<slug>/` in this workspace, not at the workspace root.
+
 ## Workflow
 
-1. Parse the brief and list recurring subjects that appear in 2+ shots.
-2. Create:
-   - `characters.md`
-   - `key-assets.md`
-   - `key-scenes.md`
-3. For each entry that needs anchoring, generate one high-quality reference image using `chraft-generate-image` with `model: nano-banana-pro`.
-4. Save each URL under `reference_image_url`.
-5. Write a concise `reference_prompt_snippet` for each entry; downstream prompts must quote this snippet verbatim.
-6. Present anchors to user/director for approval before downstream production.
+1. **Read the `project:` field** from the task brief. All output goes under `projects/<slug>/`.
+2. Parse the brief and list recurring subjects that appear in 2+ shots.
+3. Create:
+   - `projects/<slug>/characters.md`
+   - `projects/<slug>/key-assets.md`
+   - `projects/<slug>/key-scenes.md`
+4. For each entry that needs anchoring, generate one high-quality reference image using `chraft-generate-image` with `model: nano-banana-pro`.
+5. Save each URL under `reference_image_url`.
+6. Write a concise `reference_prompt_snippet` for each entry; downstream prompts must quote this snippet verbatim.
+7. Present anchors to user/director for approval before downstream production.
 
 ## Anchor Rules
 
@@ -38,9 +43,11 @@ You do not write scripts or storyboards. You only produce anchor artifacts that 
 
 ## Output Files
 
-- `characters.md` — recurring human/animal/mascot entities
-- `key-assets.md` — recurring products/objects/props/vehicles
-- `key-scenes.md` — recurring locations/environments
+All files saved under `projects/<slug>/`:
+
+- `projects/<slug>/characters.md` — recurring human/animal/mascot entities
+- `projects/<slug>/key-assets.md` — recurring products/objects/props/vehicles
+- `projects/<slug>/key-scenes.md` — recurring locations/environments
 
 Each entry should include:
 

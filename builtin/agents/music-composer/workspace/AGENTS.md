@@ -42,6 +42,10 @@ Given a music request, you:
 | "instrumental" + wants full production                     | Suno with `instrumental: true` |
 | Wants result fast                                          | ElevenLabs                     |
 
+## Project Isolation
+
+When the task brief includes `project: <slug>`, save any output files (session logs, generated audio metadata) under `projects/<slug>/` in this workspace. If no project slug is provided (e.g. standalone music requests from the user), save to the workspace root as before.
+
 ## Output Format
 
 After generating, always present:

@@ -60,10 +60,12 @@ User wants one short video, no production pipeline needed (e.g. "make a 5-second
 User wants a complete video with concept, script, storyboard, and editing (e.g. "make a product ad", "create a short film", "produce a TikTok video"):
 → Delegate to **video-director** (Diana) via `sessions_spawn`. Brief her with: platform, duration, style, tone, any specific requirements, and whether character consistency is needed (default: yes).
 
+**You MUST generate a project slug** and include it as the first line of the task. Derive a short, lowercase, hyphenated slug from the request (e.g. `coffee-ad-tiktok`, `summer-sale-promo`). This ensures all agents save outputs in isolated project folders.
+
 ```
 sessions_spawn(
   agentId: "video-director",
-  task: "<brief for Diana — include platform, duration, style, tone, requirements>",
+  task: "project: coffee-ad-tiktok\n<brief for Diana — include platform, duration, style, tone, requirements>",
   mode: "run"
 )
 ```

@@ -16,12 +16,39 @@ Every creative and production task — scripts, images, storyboards, video clips
 
 1. Receive a video brief from the user
 2. Clarify platform, duration, style, tone, aspect ratio
-3. Decide the production plan
-4. **Delegate each stage to the correct specialist agent via `sessions_spawn`**
-5. Review returned results and decide: approve or request revision
-6. Deliver the final video to the user
+3. **Generate a project slug** (see Project Isolation below)
+4. Decide the production plan
+5. **Delegate each stage to the correct specialist agent via `sessions_spawn`**
+6. Review returned results and decide: approve or request revision
+7. Deliver the final video to the user
 
 **NEVER write scripts, character sheets, storyboards, prompts, or any production content yourself.** If you are about to produce content, stop — spawn the correct agent instead.
+
+## Project Isolation
+
+Every production run MUST be isolated in a project folder. This prevents different projects from overwriting each other's files.
+
+### Creating a project slug
+
+When you receive a brief, generate a short, lowercase, hyphenated slug from the topic/title:
+
+- `coffee-brand-tiktok`, `summer-sale-promo`, `product-launch-youtube`
+- If the caller already provided a `project:` value in the task, use that slug.
+- If ambiguity is likely (e.g. the user might make multiple similar videos), prefix with date: `2026-03-30-coffee-ad`.
+
+### Your own project folder
+
+Save your production state files under `projects/<slug>/` in your workspace:
+
+- `projects/<slug>/production-plan.md`
+- `projects/<slug>/brief.md`
+- `projects/<slug>/characters.md` (written by `video-asset-designer`, stored here for your reference)
+- `projects/<slug>/key-assets.md`
+- `projects/<slug>/key-scenes.md`
+
+### Passing project context to specialists
+
+**Every `task` brief you pass to a specialist MUST include `project: <slug>`** as a top-level field so the specialist saves outputs in its own `projects/<slug>/` folder.
 
 ## How to Delegate
 
@@ -30,7 +57,7 @@ Every creative and production task — scripts, images, storyboards, video clips
 ```
 sessions_spawn(
   agentId: "video-script",
-  task: "<detailed brief for this stage>",
+  task: "project: coffee-brand-tiktok\n<detailed brief for this stage>",
   mode: "run"
 )
 ```
@@ -41,11 +68,12 @@ The specialist agent completes its task and returns the result to you as a messa
 
 Every `task` brief you pass MUST include:
 
-1. The original user brief (or relevant excerpt)
-2. All decisions already made (platform, duration, style, tone, aspect ratio)
-3. The specific deliverable expected from this agent
-4. Any constraints or preferences
-5. The path or inline content of `characters.md`, `key-assets.md`, `key-scenes.md` if they exist — or explicitly `characters: none`, `assets: none`, `scenes: none`
+1. **`project: <slug>`** — the project folder name (ALWAYS first line)
+2. The original user brief (or relevant excerpt)
+3. All decisions already made (platform, duration, style, tone, aspect ratio)
+4. The specific deliverable expected from this agent
+5. Any constraints or preferences
+6. The path or inline content of `characters.md`, `key-assets.md`, `key-scenes.md` if they exist — or explicitly `characters: none`, `assets: none`, `scenes: none`
 
 ## Production Pipeline
 
@@ -125,14 +153,14 @@ Note `references: none` in `production-plan.md` with one line explaining why. Pa
 
 ## Output Files
 
-Maintain production state in this workspace:
+Maintain production state under `projects/<slug>/` in this workspace:
 
-- `production-plan.md` — overall plan and pipeline status
-- `brief.md` — original brief + clarifications
-- `characters.md` — written and maintained by `video-asset-designer`, not by you
-- `key-assets.md` — written and maintained by `video-asset-designer`, not by you
-- `key-scenes.md` — written and maintained by `video-asset-designer`, not by you
-- `USER.md` — update pipeline status after each stage completes
+- `projects/<slug>/production-plan.md` — overall plan and pipeline status
+- `projects/<slug>/brief.md` — original brief + clarifications
+- `projects/<slug>/characters.md` — written and maintained by `video-asset-designer`, not by you
+- `projects/<slug>/key-assets.md` — written and maintained by `video-asset-designer`, not by you
+- `projects/<slug>/key-scenes.md` — written and maintained by `video-asset-designer`, not by you
+- `USER.md` — update pipeline status after each stage completes (stays at workspace root)
 
 ## Communication Style
 

@@ -7,6 +7,10 @@ You are the Video Generator Agent. You generate individual video clips for each 
 1. Read `SOUL.md`
 2. Read the storyboard provided
 
+## Project Isolation
+
+The task brief from the director includes `project: <slug>`. All output files MUST be saved under `projects/<slug>/` in this workspace, not at the workspace root.
+
 ## Your Role
 
 Given an approved storyboard and optionally `storyboard-images.md`, generate one video clip per shot using the `chraft-generate-video` skill.
@@ -68,4 +72,4 @@ Model: kling-v3-standard | Duration: 5s | Mode: T2V
 ...
 ```
 
-Save as `video-clips.md`.
+Save as `projects/<slug>/video-clips.md`.

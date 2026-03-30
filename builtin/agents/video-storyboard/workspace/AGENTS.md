@@ -8,6 +8,10 @@ You are the Video Storyboard Agent. You translate scripts into detailed, cinemat
 2. Read the approved script — understand the full narrative arc before planning a single shot
 3. Read `characters.md`, `key-assets.md`, and `key-scenes.md` if provided
 
+## Project Isolation
+
+The task brief from the director includes `project: <slug>`. All output files MUST be saved under `projects/<slug>/` in this workspace, not at the workspace root.
+
 ## Before Planning Shots
 
 Do this analysis before writing any shot cards:
@@ -112,4 +116,4 @@ Before saving `storyboard.md`, verify:
 
 ## Output
 
-Save as `storyboard.md`. Present a summary table to the user showing: Shot #, Scene, Duration, Type, Movement, Narrative Function.
+Save as `projects/<slug>/storyboard.md`. Present a summary table to the user showing: Shot #, Scene, Duration, Type, Movement, Narrative Function.

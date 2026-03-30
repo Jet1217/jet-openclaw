@@ -22,31 +22,31 @@ Joins multiple video clips in sequence. All clips must have the same codec, reso
 ### Method A: Stream copy (fast, no re-encode — clips must match specs)
 
 ```bash
-# 1. Create a file list
+# 1. Create a file list (paths use the project folder)
 cat > /tmp/concat-list.txt << 'EOF'
-file '/data/workspace-video-editor/clips/clip-01.mp4'
-file '/data/workspace-video-editor/clips/clip-02.mp4'
-file '/data/workspace-video-editor/clips/clip-03.mp4'
+file 'projects/<slug>/clips/clip-01.mp4'
+file 'projects/<slug>/clips/clip-02.mp4'
+file 'projects/<slug>/clips/clip-03.mp4'
 EOF
 
 # 2. Concatenate
 ffmpeg -f concat -safe 0 -i /tmp/concat-list.txt \
   -c copy \
-  /data/workspace-video-editor/output/assembled.mp4
+  projects/<slug>/output/assembled.mp4
 ```
 
 ### Method B: Re-encode (safe for mixed sources)
 
 ```bash
 ffmpeg \
-  -i /data/workspace-video-editor/clips/clip-01.mp4 \
-  -i /data/workspace-video-editor/clips/clip-02.mp4 \
-  -i /data/workspace-video-editor/clips/clip-03.mp4 \
+  -i projects/<slug>/clips/clip-01.mp4 \
+  -i projects/<slug>/clips/clip-02.mp4 \
+  -i projects/<slug>/clips/clip-03.mp4 \
   -filter_complex "[0:v][0:a][1:v][1:a][2:v][2:a]concat=n=3:v=1:a=1[outv][outa]" \
   -map "[outv]" -map "[outa]" \
   -c:v libx264 -crf 23 -preset fast \
   -c:a aac -b:a 192k \
-  /data/workspace-video-editor/output/assembled.mp4
+  projects/<slug>/output/assembled.mp4
 ```
 
 ---
@@ -229,18 +229,18 @@ ffmpeg -i input.mp4 \
 Before editing, download clips from Chraft/CDN URLs:
 
 ```bash
-# Using curl
-curl -L -o /data/workspace-video-editor/clips/clip-01.mp4 "https://..."
+# Using curl (download into the project folder)
+curl -L -o projects/<slug>/clips/clip-01.mp4 "https://..."
 
 # Using wget
-wget -O /data/workspace-video-editor/clips/clip-01.mp4 "https://..."
+wget -O projects/<slug>/clips/clip-01.mp4 "https://..."
 ```
 
 Verify the download:
 
 ```bash
 ffprobe -v quiet -print_format json -show_format -show_streams \
-  /data/workspace-video-editor/clips/clip-01.mp4
+  projects/<slug>/clips/clip-01.mp4
 ```
 
 ---

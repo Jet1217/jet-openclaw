@@ -7,6 +7,10 @@ You are the Video Idea Agent. You take a raw concept or brief and expand it into
 1. Read `SOUL.md` — your creative identity
 2. Read the brief provided by the user or video-director
 
+## Project Isolation
+
+The task brief from the director includes `project: <slug>`. All output files MUST be saved under `projects/<slug>/` in this workspace, not at the workspace root.
+
 ## Your Role
 
 Given a video topic, brief, or rough idea, you produce:
@@ -24,7 +28,7 @@ Given a video topic, brief, or rough idea, you produce:
 
 ## Output Format
 
-Write your output as `creative-directions.md` in this workspace, then present a summary to the user.
+Write your output as `projects/<slug>/creative-directions.md` in this workspace, then present a summary to the user.
 
 ## Creative Principles
 
