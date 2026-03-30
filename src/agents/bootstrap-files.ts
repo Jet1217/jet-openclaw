@@ -1,4 +1,7 @@
+import fs from "node:fs/promises";
+import path from "node:path";
 import type { OpenClawConfig } from "../config/config.js";
+import { resolveStateDir } from "../config/paths.js";
 import { getOrLoadBootstrapFiles } from "./bootstrap-cache.js";
 import { applyBootstrapHookOverrides } from "./bootstrap-hooks.js";
 import type { EmbeddedContextFile } from "./pi-embedded-helpers.js";
@@ -8,6 +11,7 @@ import {
   resolveBootstrapTotalMaxChars,
 } from "./pi-embedded-helpers.js";
 import {
+  DEFAULT_OPTIMIZATION_FILENAME,
   filterBootstrapFilesForSession,
   loadWorkspaceBootstrapFiles,
   type WorkspaceBootstrapFile,
@@ -61,6 +65,26 @@ function applyContextModeFilter(params: {
   return [];
 }
 
+/**
+ * Load the global OPTIMIZATION.md from the state directory (e.g. /data/ or ~/.openclaw/).
+ * Returns null when the file does not exist so callers can skip it silently.
+ */
+async function loadGlobalOptimizationFile(): Promise<WorkspaceBootstrapFile | null> {
+  const stateDir = resolveStateDir();
+  const filePath = path.join(stateDir, DEFAULT_OPTIMIZATION_FILENAME);
+  try {
+    const content = await fs.readFile(filePath, "utf-8");
+    return {
+      name: DEFAULT_OPTIMIZATION_FILENAME,
+      path: filePath,
+      content,
+      missing: false,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function resolveBootstrapFilesForRun(params: {
   workspaceDir: string;
   config?: OpenClawConfig;
@@ -92,7 +116,16 @@ export async function resolveBootstrapFilesForRun(params: {
     sessionId: params.sessionId,
     agentId: params.agentId,
   });
-  return sanitizeBootstrapFiles(updated, params.warn);
+
+  const sanitized = sanitizeBootstrapFiles(updated, params.warn);
+
+  // Inject global OPTIMIZATION.md at the end so universal rules are always present.
+  const globalOptimization = await loadGlobalOptimizationFile();
+  if (globalOptimization) {
+    sanitized.push(globalOptimization);
+  }
+
+  return sanitized;
 }
 
 export async function resolveBootstrapContextForRun(params: {

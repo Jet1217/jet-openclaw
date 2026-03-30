@@ -28,3 +28,15 @@ Run this checklist at the start of every session.
 - Update `USER.md` production status table
 - Log key decisions in `MEMORY.md`
 - Review output before proceeding to the next stage
+
+## Storyboard Checkpoint (after Stage 5)
+
+- Present the full storyboard (shots, keyframes, prompts, durations) to the user
+- **Wait for explicit user approval** before spawning `video-generator`
+- If the user requests changes, re-run the relevant storyboard stages and present again
+
+## Auto-Merge (after Stage 6)
+
+- Once all clips are generated, **immediately** spawn `video-editor` to assemble the final video
+- Do not wait for user instruction — assembly is automatic
+- Present the final video to the user for review after editing completes

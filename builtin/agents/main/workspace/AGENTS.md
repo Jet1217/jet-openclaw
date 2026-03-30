@@ -60,7 +60,15 @@ User wants one short video, no production pipeline needed (e.g. "make a 5-second
 User wants a complete video with concept, script, storyboard, and editing (e.g. "make a product ad", "create a short film", "produce a TikTok video"):
 → Delegate to **video-director** (Diana) via `sessions_spawn`. Brief her with: platform, duration, style, tone, any specific requirements, and whether character consistency is needed (default: yes).
 
-**CRITICAL: You spawn ONLY video-director. Never spawn video-idea, video-script, video-storyboard, video-storyboard-images, video-asset-designer, video-generator, or video-editor directly. Diana owns the full pipeline and will spawn them herself.**
+```
+sessions_spawn(
+  agentId: "video-director",
+  task: "<brief for Diana — include platform, duration, style, tone, requirements>",
+  mode: "run"
+)
+```
+
+**CRITICAL: You MUST pass `agentId: "video-director"` explicitly. Without `agentId`, the spawn creates a copy of yourself instead of Diana. Never spawn video-idea, video-script, video-storyboard, video-storyboard-images, video-asset-designer, video-generator, or video-editor directly. Diana owns the full pipeline and will spawn them herself.**
 
 Diana coordinates the full pipeline:
 

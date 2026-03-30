@@ -69,6 +69,22 @@ This rule applies to all agents including `main`. Never repeat a previously docu
 
 ---
 
-## 4. Language
+## 4. Spawning Agents — Always Pass `agentId`
+
+When using `sessions_spawn`, you **MUST** always pass the `agentId` parameter with the exact agent ID of the target agent.
+
+**Without `agentId`, the spawned session becomes a copy of yourself** — it reads YOUR workspace, uses YOUR config, and has YOUR identity. The `label` parameter is just a display name; it does NOT select which agent runs.
+
+```
+// CORRECT — spawns the video-script agent
+sessions_spawn(agentId: "video-script", task: "...", mode: "run")
+
+// WRONG — spawns a copy of the CALLER, not video-script
+sessions_spawn(label: "video-script", task: "...", mode: "run")
+```
+
+---
+
+## 5. Language
 
 All code comments and file content must be in **English**.

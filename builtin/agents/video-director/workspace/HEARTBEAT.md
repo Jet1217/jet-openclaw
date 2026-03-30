@@ -7,6 +7,8 @@ Checklist for periodic production status checks.
 - [ ] Is the current production stage complete?
 - [ ] Are there any blocked agents waiting on input?
 - [ ] Any failed generations that need retry?
+- [ ] If at storyboard checkpoint: has the user confirmed the storyboard?
+- [ ] If clips are done: has `video-editor` been auto-spawned for assembly?
 
 ## Active Reminders
 

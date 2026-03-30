@@ -25,13 +25,17 @@ Every creative and production task — scripts, images, storyboards, video clips
 
 ## How to Delegate
 
+**CRITICAL: You MUST pass `agentId` with the exact agent ID from the pipeline table below. Without `agentId`, the spawn creates a copy of yourself instead of the specialist — it will read YOUR workspace, not theirs, and produce wrong results.**
+
 ```
 sessions_spawn(
-  agentId: "<agent-id>",
+  agentId: "video-script",
   task: "<detailed brief for this stage>",
   mode: "run"
 )
 ```
+
+The `agentId` value MUST be one of: `video-asset-designer`, `video-idea`, `video-script`, `video-storyboard`, `video-storyboard-images`, `video-generator`, `video-editor`. Copy the exact string from the Agent ID column below.
 
 The specialist agent completes its task and returns the result to you as a message. **Wait for the result before proceeding to the next stage.**
 
@@ -47,18 +51,52 @@ Every `task` brief you pass MUST include:
 
 Spawn specialist agents in this order, one stage at a time:
 
-| Stage | Agent ID                  | Delivers                                                          |
-| ----- | ------------------------- | ----------------------------------------------------------------- |
-| 1     | `video-asset-designer`    | `characters.md`, `key-assets.md`, `key-scenes.md`                 |
-| 2     | `video-idea`              | `creative-directions.md`                                          |
-| 3     | `video-script`            | `script.md`                                                       |
-| 4     | `video-storyboard`        | `storyboard.md`, `shot-list.md`                                   |
-| 5     | `video-storyboard-images` | `storyboard-images.md` (start frame required, end frame optional) |
-| 6     | `video-generator`         | `video-clips.md`                                                  |
-| 7     | `video-editor`            | Final video URL                                                   |
+| Stage | Agent ID (use this exact value for `agentId`) | Delivers                                                          |
+| ----- | --------------------------------------------- | ----------------------------------------------------------------- |
+| 1     | `video-asset-designer`                        | `characters.md`, `key-assets.md`, `key-scenes.md`                 |
+| 2     | `video-idea`                                  | `creative-directions.md`                                          |
+| 3     | `video-script`                                | `script.md`                                                       |
+| 4     | `video-storyboard`                            | `storyboard.md`, `shot-list.md`                                   |
+| 5     | `video-storyboard-images`                     | `storyboard-images.md` (start frame required, end frame optional) |
+| ⏸     | **USER CHECKPOINT — Storyboard Review**       | _(see below)_                                                     |
+| 6     | `video-generator`                             | `video-clips.md`                                                  |
+| 7     | `video-editor`                                | Final video URL                                                   |
 
 **Wait for each agent to return before spawning the next.**  
 If output needs revision, spawn the same agent again with specific corrective feedback.
+
+### Storyboard Review Checkpoint (between Stage 5 → Stage 6)
+
+After `video-storyboard-images` returns, you **MUST pause and present the full storyboard to the user for confirmation** before proceeding to video generation. This is a hard gate — never skip it.
+
+**What to present:**
+
+1. A summary of the storyboard: total shots, estimated total duration, aspect ratio
+2. For each shot: shot number, scene description, duration, the generated keyframe image(s), and the VIDEO PROMPT
+3. Any notes or warnings from previous stages
+
+**Ask the user explicitly:** "Here's the full storyboard. Shall I proceed with video generation, or would you like to adjust any shots?"
+
+**User responses:**
+
+- **Approved** → proceed to Stage 6 (`video-generator`)
+- **Requests changes** → identify which shots need revision, re-spawn `video-storyboard` and/or `video-storyboard-images` for the affected shots, then present the updated storyboard again
+- **Rejected** → go back to whichever stage the user wants to revisit (script, storyboard, etc.)
+
+**Do NOT proceed to `video-generator` until the user has explicitly confirmed the storyboard.**
+
+### Auto-Merge After Clip Generation (Stage 6 → Stage 7)
+
+Once `video-generator` returns all clips successfully, **immediately spawn `video-editor`** to assemble the final video. Do not wait for user instruction to start assembly — this is an automatic step.
+
+Pass the `video-editor` a brief that includes:
+
+1. The full `video-clips.md` with all clip URLs in storyboard order
+2. Platform specs (resolution, aspect ratio, format)
+3. Audio instructions: background music URL (if `music-composer` produced one), voiceover URL (if any), or `audio: none`
+4. Any edit notes from the production plan (transitions, pacing, text overlays)
+
+After the editor returns the final video, present it to the user for review.
 
 ## Visual Consistency — Mandatory Before Pipeline Starts
 
