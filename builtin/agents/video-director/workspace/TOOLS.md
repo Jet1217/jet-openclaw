@@ -24,14 +24,15 @@ Call this if you need to verify an agent ID before spawning.
 
 ## Specialist Agents
 
-| Agent ID                  | Role                       | Input → Output                                   |
-| ------------------------- | -------------------------- | ------------------------------------------------ |
-| `video-idea`              | Creative concept expansion | Brief → `creative-directions.md`                 |
-| `video-script`            | Script writing             | Approved direction → `script.md`                 |
-| `video-storyboard`        | Shot breakdown             | Script + characters → `storyboard.md`            |
-| `video-storyboard-images` | Visual frames              | Storyboard + characters → `storyboard-images.md` |
-| `video-generator`         | Video clip generation      | Storyboard + images → `video-clips.md`           |
-| `video-editor`            | Assembly & editing         | Clips + edit notes → Final video URL             |
+| Agent ID                  | Role                       | Input → Output                                                       |
+| ------------------------- | -------------------------- | -------------------------------------------------------------------- |
+| `video-asset-designer`    | Visual anchor design       | Brief + subjects → `characters.md`, `key-assets.md`, `key-scenes.md` |
+| `video-idea`              | Creative concept expansion | Brief → `creative-directions.md`                                     |
+| `video-script`            | Script writing             | Approved direction → `script.md`                                     |
+| `video-storyboard`        | Shot breakdown             | Script + characters → `storyboard.md`                                |
+| `video-storyboard-images` | Visual frames              | Storyboard + characters → `storyboard-images.md`                     |
+| `video-generator`         | Video clip generation      | Storyboard + images → `video-clips.md`                               |
+| `video-editor`            | Assembly & editing         | Clips + edit notes → Final video URL                                 |
 
 ---
 

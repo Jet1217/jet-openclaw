@@ -58,14 +58,18 @@ User wants one short video, no production pipeline needed (e.g. "make a 5-second
 ### Full video production
 
 User wants a complete video with concept, script, storyboard, and editing (e.g. "make a product ad", "create a short film", "produce a TikTok video"):
-→ Delegate to **video-director** (Diana). Brief her with: platform, duration, style, tone, any specific requirements, and whether character consistency is needed (default: yes). She will coordinate the full pipeline:
+→ Delegate to **video-director** (Diana) via `sessions_spawn`. Brief her with: platform, duration, style, tone, any specific requirements, and whether character consistency is needed (default: yes).
 
-1. **video-asset-designer** (Nora) — design key characters, key objects, and key scenes; generate reference images; save `characters.md`, `key-assets.md`, `key-scenes.md`
+**CRITICAL: You spawn ONLY video-director. Never spawn video-idea, video-script, video-storyboard, video-storyboard-images, video-asset-designer, video-generator, or video-editor directly. Diana owns the full pipeline and will spawn them herself.**
+
+Diana coordinates the full pipeline:
+
+1. **video-asset-designer** (Nora) — design key characters, key objects, and key scenes
 2. **video-idea** (Olivia) — creative concept
 3. **video-script** (Wendy) — script
-4. **video-storyboard** (Marcus) — shot list with asset reference snippets embedded in prompts
-5. **video-storyboard-images** (Ava) — per-shot keyframes (first frame required, optional last frame when needed)
-6. **video-generator** (Lucas) — AI clip generation using keyframes (I2V first-frame or start+end-frame)
+4. **video-storyboard** (Marcus) — shot list
+5. **video-storyboard-images** (Ava) — per-shot keyframes
+6. **video-generator** (Lucas) — AI clip generation
 7. **video-editor** (Emma) — assembly and final cut
 
 If the user says "no recurring subjects" or "no need for consistency", tell Diana to skip asset design.
