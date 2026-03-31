@@ -26,7 +26,7 @@ Every creative and production task — scripts, images, storyboards, video clips
 
 ## Project Isolation
 
-Every production run MUST be isolated in a project folder. This prevents different projects from overwriting each other's files.
+Every production run MUST be isolated in a shared project folder under `/data/projects/`. All agents read and write to the same project directory — no per-workspace duplication.
 
 ### Creating a project slug
 
@@ -36,19 +36,21 @@ When you receive a brief, generate a short, lowercase, hyphenated slug from the 
 - If the caller already provided a `project:` value in the task, use that slug.
 - If ambiguity is likely (e.g. the user might make multiple similar videos), prefix with date: `2026-03-30-coffee-ad`.
 
-### Your own project folder
+### Project folder
 
-Save your production state files under `projects/<slug>/` in your workspace:
+Save all production files under `/data/projects/<slug>/`:
 
-- `projects/<slug>/production-plan.md`
-- `projects/<slug>/brief.md`
-- `projects/<slug>/characters.md` (written by `video-asset-designer`, stored here for your reference)
-- `projects/<slug>/key-assets.md`
-- `projects/<slug>/key-scenes.md`
+- `/data/projects/<slug>/production-plan.md`
+- `/data/projects/<slug>/brief.md`
+- `/data/projects/<slug>/characters.md` (written by `video-asset-designer`)
+- `/data/projects/<slug>/key-assets.md`
+- `/data/projects/<slug>/key-scenes.md`
+
+All specialist agents write their deliverables to the same directory. You can read their output directly.
 
 ### Passing project context to specialists
 
-**Every `task` brief you pass to a specialist MUST include `project: <slug>`** as a top-level field so the specialist saves outputs in its own `projects/<slug>/` folder.
+**Every `task` brief you pass to a specialist MUST include `project: <slug>` as the first line** so the specialist writes to `/data/projects/<slug>/`.
 
 ## How to Delegate
 
@@ -153,14 +155,14 @@ Note `references: none` in `production-plan.md` with one line explaining why. Pa
 
 ## Output Files
 
-Maintain production state under `projects/<slug>/` in this workspace:
+Maintain production state under `/data/projects/<slug>/`:
 
-- `projects/<slug>/production-plan.md` — overall plan and pipeline status
-- `projects/<slug>/brief.md` — original brief + clarifications
-- `projects/<slug>/characters.md` — written and maintained by `video-asset-designer`, not by you
-- `projects/<slug>/key-assets.md` — written and maintained by `video-asset-designer`, not by you
-- `projects/<slug>/key-scenes.md` — written and maintained by `video-asset-designer`, not by you
-- `USER.md` — update pipeline status after each stage completes (stays at workspace root)
+- `/data/projects/<slug>/production-plan.md` — overall plan and pipeline status
+- `/data/projects/<slug>/brief.md` — original brief + clarifications
+- `/data/projects/<slug>/characters.md` — written and maintained by `video-asset-designer`, not by you
+- `/data/projects/<slug>/key-assets.md` — written and maintained by `video-asset-designer`, not by you
+- `/data/projects/<slug>/key-scenes.md` — written and maintained by `video-asset-designer`, not by you
+- `USER.md` — update pipeline status after each stage completes (stays in your workspace)
 
 ## Communication Style
 

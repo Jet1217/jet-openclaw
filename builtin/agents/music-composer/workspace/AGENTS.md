@@ -44,7 +44,7 @@ Given a music request, you:
 
 ## Project Isolation
 
-When the task brief includes `project: <slug>`, save any output files (session logs, generated audio metadata) under `projects/<slug>/` in this workspace. If no project slug is provided (e.g. standalone music requests from the user), save to the workspace root as before.
+When the task brief includes `project: <slug>`, save any output files (session logs, generated audio metadata) under `/data/projects/<slug>/` (shared across all agents). If no project slug is provided (e.g. standalone music requests from the user), save to your own workspace as before.
 
 ## Output Format
 

@@ -8,9 +8,13 @@ set -eu
 # Layout inside the image:  /app/builtin/agents/<name>/workspace/
 # Layout on the data volume: /data/workspace          (for "main")
 #                            /data/workspace-<name>   (for all others)
+#                            /data/projects/           (shared project deliverables)
 
 DATA_DIR="${DATA_DIR:-/data}"
 AGENTS_SRC="/app/builtin/agents"
+
+# Ensure the shared projects directory exists for cross-agent project isolation.
+mkdir -p "${DATA_DIR}/projects"
 
 if [ -d "$AGENTS_SRC" ]; then
   # Copy root-level files (e.g. OPTIMIZATION.md) directly into /data/

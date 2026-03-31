@@ -87,25 +87,32 @@ sessions_spawn(label: "video-script", task: "...", mode: "run")
 
 ## 5. Project Folder Isolation
 
-Different projects **MUST** store their outputs in separate project folders within each agent's workspace. This prevents one project from overwriting another's files.
+Different projects **MUST** store their outputs in separate project folders. All project data lives under a **shared** `/data/projects/` directory so that every agent can read and write to the same project files directly — no cross-workspace path juggling required.
 
 > **This rule applies to ALL agents**, including third-party agents installed from zip packages. This file (`OPTIMIZATION.md`) is automatically injected into every agent's system prompt at runtime — you are bound by these rules regardless of what your own `AGENTS.md` says about file paths.
 
 ### Layout
 
 ```
-/data/workspace-<agent-name>/
-├── AGENTS.md, SOUL.md, ... (agent config — shared, never per-project)
-├── memory/                  (agent memory — shared across projects)
-└── projects/
-    ├── <project-slug>/      (all deliverables for this project)
+/data/
+├── workspace/                     (main agent config)
+├── workspace-<agent-name>/        (per-agent config, memory, skills)
+└── projects/                      (shared across ALL agents)
+    ├── <project-slug>/
+    │   ├── brief.md
+    │   ├── production-plan.md
+    │   ├── characters.md
     │   ├── script.md
     │   ├── storyboard.md
-    │   ├── ...
-    │   └── output/
+    │   ├── storyboard-images.md
+    │   ├── video-clips.md
+    │   ├── clips/                 (downloaded video clips)
+    │   └── output/                (final rendered videos)
     └── <another-project>/
         └── ...
 ```
+
+All agents read and write to the **same** `/data/projects/<slug>/` folder. There is no per-agent duplication — `video-script` writes `/data/projects/<slug>/script.md`, `video-storyboard` reads it from the same path, etc.
 
 ### How to detect the project slug
 
@@ -116,18 +123,17 @@ project: coffee-ad-tiktok
 <rest of the brief...>
 ```
 
-- If the task contains `project: <slug>`, you **MUST** save all output files under `projects/<slug>/` in your workspace.
-- If no `project:` field is present (e.g. standalone direct chat), save to the workspace root as usual.
+- If the task contains `project: <slug>`, you **MUST** save all output files under `/data/projects/<slug>/`.
+- If no `project:` field is present (e.g. standalone direct chat), save to your own workspace as usual.
 
 ### Rules
 
 1. **The orchestrator (e.g. `video-director`) creates the project slug** from the brief — use a short, lowercase, hyphenated name derived from the project title or topic (e.g. `coffee-ad-tiktok`, `summer-sale-promo`). Include a date prefix if ambiguity is likely: `2026-03-30-coffee-ad`.
-2. **Every `sessions_spawn` task brief MUST include `project: <slug>` as the first line** so the specialist agent knows where to save outputs.
-3. **Specialist agents save all deliverables under `projects/<slug>/`** inside their own workspace. For example, `video-script` saves `projects/coffee-ad/script.md`, not `script.md` at the workspace root.
-4. **Cross-agent file references use the full path** including the project folder: `/data/workspace-video-script/projects/coffee-ad/script.md`.
-5. **Agent config files (`AGENTS.md`, `SOUL.md`, `MEMORY.md`, etc.) remain at the workspace root.** Only deliverables go into `projects/<slug>/`.
-6. **The `main` agent passes the project slug** when spawning an orchestrator. If the user doesn't name the project, `main` generates a slug from the request.
-7. **When spawning a sub-agent that you expect to produce files**, always forward the `project: <slug>` line in the task brief so the sub-agent inherits the same project folder.
+2. **Every `sessions_spawn` task brief MUST include `project: <slug>` as the first line** so the specialist agent knows the project folder.
+3. **All agents save deliverables under `/data/projects/<slug>/`** — the same shared directory. For example, `video-script` saves `/data/projects/coffee-ad/script.md`, and `video-storyboard` reads it from the same path.
+4. **Agent config files (`AGENTS.md`, `SOUL.md`, `MEMORY.md`, etc.) remain in each agent's own workspace.** Only project deliverables go into `/data/projects/<slug>/`.
+5. **The `main` agent passes the project slug** when spawning an orchestrator. If the user doesn't name the project, `main` generates a slug from the request.
+6. **When spawning a sub-agent that you expect to produce files**, always forward the `project: <slug>` line in the task brief so the sub-agent writes to the same project folder.
 
 ### Project slug format
 

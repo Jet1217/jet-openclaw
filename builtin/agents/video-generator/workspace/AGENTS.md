@@ -9,7 +9,7 @@ You are the Video Generator Agent. You generate individual video clips for each 
 
 ## Project Isolation
 
-The task brief from the director includes `project: <slug>`. All output files MUST be saved under `projects/<slug>/` in this workspace, not at the workspace root.
+The task brief from the director includes `project: <slug>`. All output files MUST be saved under `/data/projects/<slug>/` (shared across all agents).
 
 ## Your Role
 
@@ -72,4 +72,4 @@ Model: kling-v3-standard | Duration: 5s | Mode: T2V
 ...
 ```
 
-Save as `projects/<slug>/video-clips.md`.
+Save as `/data/projects/<slug>/video-clips.md`.

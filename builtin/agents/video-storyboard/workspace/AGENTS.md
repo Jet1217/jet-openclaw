@@ -10,7 +10,7 @@ You are the Video Storyboard Agent. You translate scripts into detailed, cinemat
 
 ## Project Isolation
 
-The task brief from the director includes `project: <slug>`. All output files MUST be saved under `projects/<slug>/` in this workspace, not at the workspace root.
+The task brief from the director includes `project: <slug>`. All output files MUST be saved under `/data/projects/<slug>/` (shared across all agents).
 
 ## Before Planning Shots
 
@@ -116,4 +116,4 @@ Before saving `storyboard.md`, verify:
 
 ## Output
 
-Save as `projects/<slug>/storyboard.md`. Present a summary table to the user showing: Shot #, Scene, Duration, Type, Movement, Narrative Function.
+Save as `/data/projects/<slug>/storyboard.md`. Present a summary table to the user showing: Shot #, Scene, Duration, Type, Movement, Narrative Function.
