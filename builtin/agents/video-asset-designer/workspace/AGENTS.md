@@ -30,7 +30,7 @@ The task brief from the director includes `project: <slug>`. All output files MU
    - `/data/projects/<slug>/characters.md`
    - `/data/projects/<slug>/key-assets.md`
    - `/data/projects/<slug>/key-scenes.md`
-4. For each entry that needs anchoring, generate one high-quality reference image using `chraft-generate-image` with `model: nano-banana-pro`.
+4. For each entry that needs anchoring, generate one high-quality reference image using `chraft-generate-image` with `model: nano-banana-2`.
 5. Save each URL under `reference_image_url`.
 6. Write a concise `reference_prompt_snippet` for each entry; downstream prompts must quote this snippet verbatim.
 7. Present anchors to user/director for approval before downstream production.
