@@ -86,6 +86,7 @@ Spawn specialist agents in this order, one stage at a time:
 | 1     | `video-asset-designer`                        | `characters.md`, `key-assets.md`, `key-scenes.md`                 |
 | 2     | `video-idea`                                  | `creative-directions.md`                                          |
 | 3     | `video-script`                                | `script.md`                                                       |
+| 3.5   | _(self)_ VoiceOver Decision                   | `voiceover.mp3` (if applicable)                                   |
 | 4     | `video-storyboard`                            | `storyboard.md`, `shot-list.md`                                   |
 | 5     | `video-storyboard-images`                     | `storyboard-images.md` (start frame required, end frame optional) |
 | ⏸     | **USER CHECKPOINT — Storyboard Review**       | _(see below)_                                                     |
@@ -94,6 +95,41 @@ Spawn specialist agents in this order, one stage at a time:
 
 **Wait for each agent to return before spawning the next.**  
 If output needs revision, spawn the same agent again with specific corrective feedback.
+
+### VoiceOver Decision (Stage 3.5 — after script, before storyboard)
+
+After `video-script` returns `script.md`, evaluate whether the video needs a voiceover narration track.
+
+**Generate a voiceover when ALL of the following are true:**
+
+- The script contains a narration track, spoken lines, or voiceover copy (look for labels like `VO:`, `Narration:`, `Voice:`, or a dedicated narration column)
+- The video style suggests spoken narration fits (e.g. explainer, documentary, product demo, educational content, ad with brand voice)
+- The user has not explicitly said "no voiceover" or "music only"
+
+**Skip voiceover when ANY of the following apply:**
+
+- The script has no narration — only visual directions, subtitles, or on-screen text
+- The user requested pure music, ambient audio, or silent video
+- The video is purely cinematic / mood-driven with no spoken element
+
+**If voiceover is needed, generate it yourself using the `chraft-tts` skill:**
+
+1. Extract the full narration text from `script.md` (concatenate all VO lines in order, preserving pacing breaks as line breaks)
+2. Choose a voice that matches the video's tone:
+   - Professional / corporate / explainer → Rachel (`21m00Tcm4TlvDq8ikWAM`) or Matilda (`XrExE9yKIg1WjnnlVkGX`)
+   - Warm / conversational / social → Paige (`NDTYOmYEjbDIVCKB35i3`) or Jessica (`cgSgspJ2msm6clMCkdW9`)
+   - Energetic / bold / hype → Arnold (`VR6AewLTigWG4xSOukaG`)
+   - Soft / ASMR / intimate → Bella (`EXAVITQu4vr4xnSDxMaL`)
+   - If the user specified a voice or gender preference, honour it
+3. Use `model_id: "eleven_multilingual_v2"` unless the user specified otherwise
+4. Call the TTS API and save the returned `audioUrl` to `/data/projects/<slug>/voiceover.md` (one line: `voiceover_url: <url>`)
+5. Note the voice name and credits used in `production-plan.md`
+
+**If voiceover is not needed**, write `voiceover: none` to `/data/projects/<slug>/voiceover.md` and proceed.
+
+Do not ask the user for permission before generating voiceover — make the call yourself based on the script. Only surface the decision to the user if genuinely ambiguous (e.g. script has some spoken lines but the brief says "music video").
+
+---
 
 ### Storyboard Review Checkpoint (between Stage 5 → Stage 6)
 
@@ -123,7 +159,7 @@ Pass the `video-editor` a brief that includes:
 
 1. The full `video-clips.md` with all clip URLs in storyboard order
 2. Platform specs (resolution, aspect ratio, format)
-3. Audio instructions: background music URL (if `music-composer` produced one), voiceover URL (if any), or `audio: none`
+3. Audio instructions: background music URL (if `music-composer` produced one), voiceover URL from `/data/projects/<slug>/voiceover.md` (if generated), or `audio: none`
 4. Any edit notes from the production plan (transitions, pacing, text overlays)
 
 After the editor returns the final video, present it to the user for review.
