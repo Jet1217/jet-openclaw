@@ -94,9 +94,9 @@ See `references/video-models.md` for the full model list organised by series (Kl
 
 **Kling 3 duration note:** supports 3–15 s (integer seconds). Clamp user input to this range when Kling 3 is selected.
 
-**PixVerse duration note:** v5 supports 5 or 8 s only; v5.5 and v5.6 support 5, 8, or 10 s. For 10 s clips, `resolution` must be `hd` (720p) — `fhd` (1080p) is not supported at 10 s. v5 has no audio; v5.5 and v5.6 auto-generate ambient audio.
+**PixVerse duration note:** v5 supports 5 or 8 s only; v5.5 and v5.6 support 5, 8, or 10 s (10s requires `hd`/720p — `fhd` not available); v6 supports 1–15 s (any integer) at all resolutions (360p/540p/720p/1080p).
 
-**PixVerse transition (first+last frame):** When the user provides two images (start and end), pass both `start_image_url` and `end_image_url` with a PixVerse I2V model to interpolate between the two frames.
+**PixVerse transition (first+last frame):** When the user provides two images (start and end), pass both `start_image_url` and `end_image_url` with a PixVerse I2V model to interpolate between the two frames. Supported on all PixVerse versions.
 
 ---
 
@@ -174,3 +174,12 @@ All errors return `{ success: false, error: "..." }`. A `402` also includes `err
 
 **"Create a cinematic landscape with Google Veo"**
 → T2V, `google/veo-3.1` (user-specified), `aspect_ratio: "16:9"`, `duration: 8`
+
+**"Generate a 10-second PixVerse v6 video of a neon cityscape at night"**
+→ T2V, `pixverse/v6/t2v`, `aspect_ratio: "16:9"`, `duration: 10`, `resolution: "hd"`
+
+**"Animate this photo with PixVerse v6 in portrait mode"**
+→ I2V, `pixverse/v6/i2v`, `start_image_url: <url>`, `duration: 5`, `resolution: "hd"`
+
+**"Make a PixVerse v6 transition between two images"**
+→ I2V with end frame, `pixverse/v6/i2v`, `start_image_url: <first>`, `end_image_url: <last>`, `duration: 5`

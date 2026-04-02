@@ -108,20 +108,26 @@ Supported durations: **4, 8, 12, 16, 20 s** (fixed steps only — do not pass ar
 
 ## PixVerse
 
-Supported durations: **5, 8 s** for v5; **5, 8, 10 s** for v5.5 and v5.6 (10s only available at 720p, not 1080p).
+Supported durations: **5, 8 s** for v5; **5, 8, 10 s** for v5.5 and v5.6 (10s only available at 720p, not 1080p); **1–15 s** (any integer) for v6.
 
-| Model ID            | Mode | Max Duration | Notes                                      |
-| ------------------- | ---- | ------------ | ------------------------------------------ |
-| `pixverse/v5/t2v`   | T2V  | 8s           | No audio                                   |
-| `pixverse/v5/i2v`   | I2V  | 8s           | No audio; pass `start_image_url`           |
-| `pixverse/v5.5/t2v` | T2V  | 10s          | Native audio (ambient + music); multi-clip |
-| `pixverse/v5.5/i2v` | I2V  | 10s          | Native audio; pass `start_image_url`       |
-| `pixverse/v5.6/t2v` | T2V  | 10s          | Native audio; highest quality in PixVerse  |
-| `pixverse/v5.6/i2v` | I2V  | 10s          | Native audio; pass `start_image_url`       |
+| Model ID            | Mode | Max Duration | Notes                                                |
+| ------------------- | ---- | ------------ | ---------------------------------------------------- |
+| `pixverse/v6/t2v`   | T2V  | 15s          | Native audio, multi-clip, 360p/540p/720p/1080p       |
+| `pixverse/v6/i2v`   | I2V  | 15s          | Native audio, first+last frame, 360p/540p/720p/1080p |
+| `pixverse/v5.6/t2v` | T2V  | 10s          | Native audio; highest quality in v5 series           |
+| `pixverse/v5.6/i2v` | I2V  | 10s          | Native audio; pass `start_image_url`                 |
+| `pixverse/v5.5/t2v` | T2V  | 10s          | Native audio (ambient + music); multi-clip           |
+| `pixverse/v5.5/i2v` | I2V  | 10s          | Native audio; pass `start_image_url`                 |
+| `pixverse/v5/t2v`   | T2V  | 8s           | No audio                                             |
+| `pixverse/v5/i2v`   | I2V  | 8s           | No audio; pass `start_image_url`                     |
 
-**Transition (first + last frame):** Pass both `start_image_url` and `end_image_url` with any I2V model to interpolate between two frames. Supported on v5, v5.5, and v5.6.
+**Transition (first + last frame):** Pass both `start_image_url` and `end_image_url` with any I2V model to interpolate between two frames. Supported on all versions.
 
 **Resolution (`resolution` field):**
 
-- `hd` = 720p (default, supported for all durations)
-- `fhd` = 1080p (supported up to 8s only; not available for 10s clips)
+- v6: `360p`, `540p`, `hd` (720p), `fhd` (1080p) — all resolutions supported for all durations
+- v5 / v5.5 / v5.6: `hd` = 720p (default); `fhd` = 1080p (supported up to 8s only; not available for 10s clips)
+
+**PixVerse v6 aspect ratios (T2V only):** `16:9`, `4:3`, `1:1`, `3:4`, `9:16`, `2:3`, `3:2`, `21:9`
+
+**PixVerse v6 credits (per second with audio):** 360p = 7/s · 540p = 9/s · 720p = 12/s · 1080p = 23/s
