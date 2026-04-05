@@ -32,6 +32,8 @@ Kling 3 supported duration range: **3–15 s** (integer seconds).
 
 ## Seedance Series (ByteDance)
 
+Seedance 2.0 supported duration range: **4–15 s** (any integer).
+
 | Model ID                        | Mode    | Max Duration | Notes                                              |
 | ------------------------------- | ------- | ------------ | -------------------------------------------------- |
 | `seedance2/text-to-video`       | T2V     | 15s          | Seedance 2.0 standard                              |

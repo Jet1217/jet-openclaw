@@ -100,7 +100,7 @@ See `references/video-models.md` for the full model list organised by series (Kl
 - Standard models: `seedance2/text-to-video`, `seedance2/image-to-video`, `seedance2/omni-reference`
 - Fast models (lower cost, faster render): `seedance2/fast/text-to-video`, `seedance2/fast/image-to-video`, `seedance2/fast/omni-reference`
 - I2V variants require `start_image_url`; optionally pass `end_image_url` for a first+last-frame transition
-- Supported durations: 5, 8, 10, 15 s; supported aspect ratios: `16:9`, `9:16`, `1:1`, `4:3`, `3:4`, `21:9`
+- Supported durations: 4–15 s (any integer); supported aspect ratios: `16:9`, `9:16`, `1:1`, `4:3`, `3:4`, `21:9`
 
 **PixVerse duration note:** v5 supports 5 or 8 s only; v5.5 and v5.6 support 5, 8, or 10 s (10 s only at 720p). v6 supports **1–15 s** (any integer). v5 has no audio; v5.5/v5.6/v6 auto-generate native audio.
 
