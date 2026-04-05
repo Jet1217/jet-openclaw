@@ -55,7 +55,7 @@ const res = await fetch(`${CHRAFT_BASE_URL}/api/openclaw/media/video`, {
     model, // see references/video-models.md for options
     prompt,
     start_image_url: startImageUrl, // I2V only — omit for T2V
-    end_image_url: endImageUrl, // PixVerse transition only — omit unless first+last frame interpolation
+    end_image_url: endImageUrl, // PixVerse / Seedance 2 transition only — omit unless first+last frame interpolation
     duration: duration ?? 5, // seconds; respect each model's max
     aspect_ratio: aspectRatio ?? "9:16",
     resolution: "hd",
@@ -80,6 +80,7 @@ See `references/video-models.md` for the full model list organised by series (Kl
 | YouTube / landscape    | `16:9` |
 | Square                 | `1:1`  |
 | Standard TV            | `4:3`  |
+| Ultra-wide             | `21:9` |
 
 **Model selection strategy** (apply in priority order):
 
@@ -94,9 +95,20 @@ See `references/video-models.md` for the full model list organised by series (Kl
 
 **Kling 3 duration note:** supports 3–15 s (integer seconds). Clamp user input to this range when Kling 3 is selected.
 
-**PixVerse duration note:** v5 supports 5 or 8 s only; v5.5 and v5.6 support 5, 8, or 10 s (10s requires `hd`/720p — `fhd` not available); v6 supports 1–15 s (any integer) at all resolutions (360p/540p/720p/1080p).
+**Seedance 2.0 notes:**
 
-**PixVerse transition (first+last frame):** When the user provides two images (start and end), pass both `start_image_url` and `end_image_url` with a PixVerse I2V model to interpolate between the two frames. Supported on all PixVerse versions.
+- Standard models: `seedance2/text-to-video`, `seedance2/image-to-video`, `seedance2/omni-reference`
+- Fast models (lower cost, faster render): `seedance2/fast/text-to-video`, `seedance2/fast/image-to-video`, `seedance2/fast/omni-reference`
+- I2V variants require `start_image_url`; optionally pass `end_image_url` for a first+last-frame transition
+- Supported durations: 5, 8, 10, 15 s; supported aspect ratios: `16:9`, `9:16`, `1:1`, `4:3`, `3:4`, `21:9`
+
+**PixVerse duration note:** v5 supports 5 or 8 s only; v5.5 and v5.6 support 5, 8, or 10 s (10 s only at 720p). v6 supports **1–15 s** (any integer). v5 has no audio; v5.5/v5.6/v6 auto-generate native audio.
+
+**PixVerse v6 resolution:** `sd360` (360p) · `sd540` (540p) · `hd` (720p) · `fhd` (1080p). Credits billed per second with audio: 360p=7/s · 540p=9/s · 720p=12/s · 1080p=23/s.
+
+**PixVerse v6 aspect ratios (T2V only):** supports all standard ratios plus `2:3`, `3:2`, `21:9`.
+
+**PixVerse transition (first+last frame):** When the user provides two images (start and end), pass both `start_image_url` and `end_image_url` with a PixVerse I2V model to interpolate between the two frames. Supported on v5, v5.5, v5.6, and v6.
 
 ---
 
@@ -171,6 +183,18 @@ All errors return `{ success: false, error: "..." }`. A `402` also includes `err
 
 **"Make a video with Kling 3, 12 seconds"**
 → T2V, `fal-ai/kling-video/v3/standard/text-to-video` (user-specified), `duration: 12`
+
+**"Make a video with Seedance 2"**
+→ T2V, `seedance2/text-to-video` (user-specified), `aspect_ratio: "9:16"`, `duration: 5`
+
+**"Make a fast Seedance 2 video"**
+→ T2V, `seedance2/fast/text-to-video` (user-specified), `aspect_ratio: "9:16"`, `duration: 5`
+
+**"Animate this image with Seedance 2"**
+→ I2V, `seedance2/image-to-video` (user-specified), `start_image_url: <url>`, `duration: 5`
+
+**"Animate this image with Seedance 2 Fast"**
+→ I2V, `seedance2/fast/image-to-video` (user-specified), `start_image_url: <url>`, `duration: 5`
 
 **"Create a cinematic landscape with Google Veo"**
 → T2V, `google/veo-3.1` (user-specified), `aspect_ratio: "16:9"`, `duration: 8`

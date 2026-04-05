@@ -32,13 +32,16 @@ Kling 3 supported duration range: **3–15 s** (integer seconds).
 
 ## Seedance Series (ByteDance)
 
-| Model ID                     | Mode    | Max Duration                            |
-| ---------------------------- | ------- | --------------------------------------- |
-| `seedance2/text-to-video`    | T2V     | 15s                                     |
-| `seedance2/image-to-video`   | I2V     | 15s                                     |
-| `seedance2/omni-reference`   | T2V+I2V | 15s                                     |
-| `bytedance/seedance-1.5-pro` | T2V+I2V | 4–12s — native audio, flexible duration |
-| `bytedance/seedance-1-pro`   | T2V+I2V | 12s                                     |
+| Model ID                        | Mode    | Max Duration | Notes                                              |
+| ------------------------------- | ------- | ------------ | -------------------------------------------------- |
+| `seedance2/text-to-video`       | T2V     | 15s          | Seedance 2.0 standard                              |
+| `seedance2/image-to-video`      | I2V     | 15s          | Seedance 2.0 standard — requires `start_image_url` |
+| `seedance2/omni-reference`      | T2V+I2V | 15s          | Seedance 2.0 standard                              |
+| `seedance2/fast/text-to-video`  | T2V     | 15s          | Seedance 2.0 Fast — lower cost, faster             |
+| `seedance2/fast/image-to-video` | I2V     | 15s          | Seedance 2.0 Fast — requires `start_image_url`     |
+| `seedance2/fast/omni-reference` | T2V+I2V | 15s          | Seedance 2.0 Fast                                  |
+| `bytedance/seedance-1.5-pro`    | T2V+I2V | 4–12s        | native audio, flexible duration                    |
+| `bytedance/seedance-1-pro`      | T2V+I2V | 12s          |                                                    |
 
 ---
 
