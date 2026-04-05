@@ -41,9 +41,11 @@ Seedance 2.0 supported duration range: **4–15 s** (any integer).
 | `seedance2/omni-reference`      | T2V+I2V | 15s          | Seedance 2.0 standard                              |
 | `seedance2/fast/text-to-video`  | T2V     | 15s          | Seedance 2.0 Fast — lower cost, faster             |
 | `seedance2/fast/image-to-video` | I2V     | 15s          | Seedance 2.0 Fast — requires `start_image_url`     |
-| `seedance2/fast/omni-reference` | T2V+I2V | 15s          | Seedance 2.0 Fast                                  |
+| `seedance2/fast/omni-reference` | T2V+I2V | 15s          | Seedance 2.0 Fast — 4–15 s any integer             |
 | `bytedance/seedance-1.5-pro`    | T2V+I2V | 4–12s        | native audio, flexible duration                    |
 | `bytedance/seedance-1-pro`      | T2V+I2V | 12s          |                                                    |
+
+**Transition (first + last frame):** Pass both `start_image_url` and `end_image_url` with any Seedance 2 I2V or omni-reference model to interpolate between two frames. Supported on all `seedance2/*` and `seedance2/fast/*` variants.
 
 ---
 
