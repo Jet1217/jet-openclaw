@@ -1,4 +1,5 @@
 import { html, nothing } from "lit";
+import { t } from "../../i18n/index.ts";
 import { formatRelativeTimestamp } from "../format.ts";
 import { icons } from "../icons.ts";
 import { pathForTab } from "../navigation.ts";
@@ -215,10 +216,16 @@ export function renderSessions(props: SessionsProps) {
       <div class="row" style="justify-content: space-between; margin-bottom: 12px;">
         <div>
           <div class="card-title">Sessions</div>
-          <div class="card-sub">${props.result ? `Store: ${props.result.path}` : "Active session keys and per-session overrides."}</div>
+          <div class="card-sub">
+            ${
+              props.result
+                ? `Store: ${props.result.path}`
+                : "Active session keys and per-session overrides."
+            }
+          </div>
         </div>
         <button class="btn" ?disabled=${props.loading} @click=${props.onRefresh}>
-          ${props.loading ? "Loading…" : "Refresh"}
+          ${props.loading ? t("common.loading") : t("common.refresh")}
         </button>
       </div>
 
@@ -303,23 +310,20 @@ export function renderSessions(props: SessionsProps) {
         ${
           props.selectedKeys.size > 0
             ? html`
-                <div class="data-table-bulk-bar">
-                  <span>${props.selectedKeys.size} selected</span>
-                  <button
-                    class="btn btn--sm"
-                    @click=${props.onDeselectAll}
-                  >
-                    Unselect
-                  </button>
-                  <button
-                    class="btn btn--sm danger"
-                    ?disabled=${props.loading}
-                    @click=${props.onDeleteSelected}
-                  >
-                    ${icons.trash} Delete
-                  </button>
-                </div>
-              `
+              <div class="data-table-bulk-bar">
+                <span>${props.selectedKeys.size} selected</span>
+                <button class="btn btn--sm" @click=${props.onDeselectAll}>
+                  ${t("common.unselect")}
+                </button>
+                <button
+                  class="btn btn--sm danger"
+                  ?disabled=${props.loading}
+                  @click=${props.onDeleteSelected}
+                >
+                  ${icons.trash} Delete
+                </button>
+              </div>
+            `
             : nothing
         }
 
@@ -332,8 +336,14 @@ export function renderSessions(props: SessionsProps) {
                     paginated.length > 0
                       ? html`<input
                         type="checkbox"
-                        .checked=${paginated.length > 0 && paginated.every((r) => props.selectedKeys.has(r.key))}
-                        .indeterminate=${paginated.some((r) => props.selectedKeys.has(r.key)) && !paginated.every((r) => props.selectedKeys.has(r.key))}
+                        .checked=${
+                          paginated.length > 0 &&
+                          paginated.every((r) => props.selectedKeys.has(r.key))
+                        }
+                        .indeterminate=${
+                          paginated.some((r) => props.selectedKeys.has(r.key)) &&
+                          !paginated.every((r) => props.selectedKeys.has(r.key))
+                        }
                         @change=${() => {
                           const allSelected = paginated.every((r) => props.selectedKeys.has(r.key));
                           if (allSelected) {
@@ -349,8 +359,7 @@ export function renderSessions(props: SessionsProps) {
                 </th>
                 ${sortHeader("key", "Key", "data-table-key-col")}
                 <th>Label</th>
-                ${sortHeader("kind", "Kind")}
-                ${sortHeader("updated", "Updated")}
+                ${sortHeader("kind", "Kind")} ${sortHeader("updated", "Updated")}
                 ${sortHeader("tokens", "Tokens")}
                 <th>Thinking</th>
                 <th>Fast</th>
@@ -387,35 +396,32 @@ export function renderSessions(props: SessionsProps) {
         ${
           totalRows > 0
             ? html`
-                <div class="data-table-pagination">
-                  <div class="data-table-pagination__info">
-                    ${page * props.pageSize + 1}-${Math.min((page + 1) * props.pageSize, totalRows)}
-                    of ${totalRows} row${totalRows === 1 ? "" : "s"}
-                  </div>
-                  <div class="data-table-pagination__controls">
-                    <select
-                      style="height: 32px; padding: 0 8px; font-size: 13px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--card);"
-                      .value=${String(props.pageSize)}
-                      @change=${(e: Event) =>
-                        props.onPageSizeChange(Number((e.target as HTMLSelectElement).value))}
-                    >
-                      ${PAGE_SIZES.map((s) => html`<option value=${s}>${s} per page</option>`)}
-                    </select>
-                    <button
-                      ?disabled=${page <= 0}
-                      @click=${() => props.onPageChange(page - 1)}
-                    >
-                      Previous
-                    </button>
-                    <button
-                      ?disabled=${page >= totalPages - 1}
-                      @click=${() => props.onPageChange(page + 1)}
-                    >
-                      Next
-                    </button>
-                  </div>
+              <div class="data-table-pagination">
+                <div class="data-table-pagination__info">
+                  ${page * props.pageSize + 1}-${Math.min((page + 1) * props.pageSize, totalRows)}
+                  of ${totalRows} row${totalRows === 1 ? "" : "s"}
                 </div>
-              `
+                <div class="data-table-pagination__controls">
+                  <select
+                    style="height: 32px; padding: 0 8px; font-size: 13px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--card);"
+                    .value=${String(props.pageSize)}
+                    @change=${(e: Event) =>
+                      props.onPageSizeChange(Number((e.target as HTMLSelectElement).value))}
+                  >
+                    ${PAGE_SIZES.map((s) => html`<option value=${s}>${s} per page</option>`)}
+                  </select>
+                  <button ?disabled=${page <= 0} @click=${() => props.onPageChange(page - 1)}>
+                    Previous
+                  </button>
+                  <button
+                    ?disabled=${page >= totalPages - 1}
+                    @click=${() => props.onPageChange(page + 1)}
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            `
             : nothing
         }
       </div>
@@ -432,7 +438,7 @@ function renderRow(
   disabled: boolean,
   onNavigateToChat?: (sessionKey: string) => void,
 ) {
-  const updated = row.updatedAt ? formatRelativeTimestamp(row.updatedAt) : "n/a";
+  const updated = row.updatedAt ? formatRelativeTimestamp(row.updatedAt) : t("common.na");
   const rawThinking = row.thinkingLevel ?? "";
   const isBinaryThinking = isBinaryThinkingProvider(row.modelProvider);
   const thinking = resolveThinkLevelDisplay(rawThinking, isBinaryThinking);
@@ -480,25 +486,26 @@ function renderRow(
           ${
             canLink
               ? html`<a
-                  href=${chatUrl}
-                  class="session-link"
-                  @click=${(e: MouseEvent) => {
-                    if (
-                      e.defaultPrevented ||
-                      e.button !== 0 ||
-                      e.metaKey ||
-                      e.ctrlKey ||
-                      e.shiftKey ||
-                      e.altKey
-                    ) {
-                      return;
-                    }
-                    if (onNavigateToChat) {
-                      e.preventDefault();
-                      onNavigateToChat(row.key);
-                    }
-                  }}
-                >${row.key}</a>`
+                href=${chatUrl}
+                class="session-link"
+                @click=${(e: MouseEvent) => {
+                  if (
+                    e.defaultPrevented ||
+                    e.button !== 0 ||
+                    e.metaKey ||
+                    e.ctrlKey ||
+                    e.shiftKey ||
+                    e.altKey
+                  ) {
+                    return;
+                  }
+                  if (onNavigateToChat) {
+                    e.preventDefault();
+                    onNavigateToChat(row.key);
+                  }
+                }}
+                >${row.key}</a
+              >`
               : row.key
           }
           ${
