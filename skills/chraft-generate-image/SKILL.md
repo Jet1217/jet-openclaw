@@ -1,6 +1,6 @@
 ---
 name: chraft-generate-image
-description: Generate images via the Chraft media API using the user's sandbox credentials. Use this skill whenever the user wants to create, generate, draw, or make any kind of image — even if they don't say "generate" explicitly. This skill handles authentication automatically via the sandbox user context, so there's no need to ask the user for API keys.
+description: Generate images via the Chraft media API using the user's sandbox credentials. Supports optional reference images via input_images (string array; one URL or many). Defaults to Nano Banana 2 (fal-ai/nano-banana-2). Use whenever the user wants to create, generate, draw, edit from a reference, or make any kind of image. Authentication uses the sandbox user context (chraftUseKey); no API key prompts.
 ---
 
 # Chraft — Image Generation
@@ -40,18 +40,31 @@ If `chraftUseKey` is empty, tell the user their sandbox hasn't been linked to a 
 
 Send a POST request with the model and prompt. The response immediately returns an `imageId` — the actual image isn't ready yet.
 
+**Reference images (optional):** Pass publicly reachable image URLs so the model can use them as conditioning ("垫图"). Use **`input_images` only** — a string array. One reference image is `["https://..."]`; multiple references are more elements in the same array (duplicates are removed server-side, order preserved).
+
+When reference images are provided, Fal routes (including Nano Banana 2) automatically use the provider's **edit** endpoint where supported. Use `fal-ai/nano-banana-2` as the model value.
+
 ```javascript
+const DEFAULT_MODEL = "fal-ai/nano-banana-2";
+
+const payload = {
+  model: model ?? DEFAULT_MODEL,
+  prompt,
+  aspect_ratio: aspectRatio ?? "1:1",
+  quality: "hd",
+  num_outputs: numOutputs ?? 1, // 1–4
+  output_format: "png",
+};
+
+// Optional: one or more reference images (omit if text-only)
+if (referenceImageUrls?.length) {
+  payload.input_images = referenceImageUrls;
+}
+
 const res = await fetch(`${CHRAFT_BASE_URL}/api/openclaw/media/image`, {
   method: "POST",
   headers: authHeaders(),
-  body: JSON.stringify({
-    model, // see references/image-models.md for options; default: "nano-banana-2"
-    prompt,
-    aspect_ratio: aspectRatio ?? "1:1",
-    quality: "hd",
-    num_outputs: numOutputs ?? 1, // 1–4
-    output_format: "png",
-  }),
+  body: JSON.stringify(payload),
 });
 
 if (!res.ok) {
@@ -113,7 +126,7 @@ Show each image inline as a markdown image, followed by a brief summary:
 ```markdown
 ![Generated Image](https://...)
 
-Model: nano-banana-2 · Credits used: 10
+Model: fal-ai/nano-banana-2 · Credits used: 10
 ```
 
 If multiple images were requested, show all of them.
@@ -137,13 +150,16 @@ All errors return `{ success: false, error: "..." }`. A `402` also includes `err
 ## Example interactions
 
 **"Generate a futuristic city at night"**
-→ `model: "nano-banana-2"`, defaults, prompt as-is
+→ default `model: "fal-ai/nano-banana-2"`, prompt as-is
 
 **"Make a 16:9 landscape wallpaper of mountains at sunset"**
-→ `aspect_ratio: "16:9"`, prompt as-is
+→ `aspect_ratio: "16:9"`, default model, prompt as-is
 
 **"Generate 4 logo concepts for a coffee brand"**
 → `num_outputs: 4`, `aspect_ratio: "1:1"`
 
+**"Edit this product photo to add holiday packaging"** (user provides image URL(s))
+→ `input_images: [url1, ...]`, same default model, prompt describes the edit
+
 **"Create a photorealistic portrait, high quality"**
-→ `model: "flux-2-pro"`, `aspect_ratio: "2:3"`
+→ `model: "black-forest-labs/flux-2-pro"`, `aspect_ratio: "2:3"` (see references for exact `model` strings)
