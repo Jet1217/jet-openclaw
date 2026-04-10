@@ -5,6 +5,7 @@ import {
 } from "openclaw/plugin-sdk/account-helpers";
 import { normalizeAccountId } from "openclaw/plugin-sdk/account-id";
 import { resolveAccountEntry } from "openclaw/plugin-sdk/routing";
+import { normalizeOptionalString } from "openclaw/plugin-sdk/text-runtime";
 import type { DiscordAccountConfig, DiscordActionConfig, OpenClawConfig } from "./runtime-api.js";
 import { resolveDiscordToken } from "./token.js";
 
@@ -33,7 +34,7 @@ export function mergeDiscordAccountConfig(
   accountId: string,
 ): DiscordAccountConfig {
   return resolveMergedAccountConfig<DiscordAccountConfig>({
-    channelConfig: cfg.channels?.discord as DiscordAccountConfig | undefined,
+    channelConfig: cfg.channels?.discord,
     accounts: cfg.channels?.discord?.accounts as
       | Record<string, Partial<DiscordAccountConfig>>
       | undefined,
@@ -69,7 +70,7 @@ export function resolveDiscordAccount(params: {
   return {
     accountId,
     enabled,
-    name: merged.name?.trim() || undefined,
+    name: normalizeOptionalString(merged.name),
     token: tokenResolution.token,
     tokenSource: tokenResolution.source,
     config: merged,

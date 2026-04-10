@@ -10,6 +10,7 @@ import {
 } from "./bus-queries.js";
 import { createQaBusWaiterStore } from "./bus-waiters.js";
 import type {
+  QaBusAttachment,
   QaBusConversation,
   QaBusCreateThreadInput,
   QaBusDeleteMessageInput,
@@ -29,13 +30,7 @@ import type {
 const DEFAULT_BOT_ID = "openclaw";
 const DEFAULT_BOT_NAME = "OpenClaw QA";
 
-type QaBusEventSeed =
-  | Omit<Extract<QaBusEvent, { kind: "inbound-message" }>, "cursor">
-  | Omit<Extract<QaBusEvent, { kind: "outbound-message" }>, "cursor">
-  | Omit<Extract<QaBusEvent, { kind: "thread-created" }>, "cursor">
-  | Omit<Extract<QaBusEvent, { kind: "message-edited" }>, "cursor">
-  | Omit<Extract<QaBusEvent, { kind: "message-deleted" }>, "cursor">
-  | Omit<Extract<QaBusEvent, { kind: "reaction-added" }>, "cursor">;
+type QaBusEventSeed = Omit<Extract<QaBusEvent, { kind: "inbound-message" }>, "cursor">;
 
 export function createQaBusState() {
   const conversations = new Map<string, QaBusConversation>();
@@ -86,6 +81,7 @@ export function createQaBusState() {
     threadId?: string;
     threadTitle?: string;
     replyToId?: string;
+    attachments?: QaBusAttachment[];
   }): QaBusMessage => {
     const conversation = ensureConversation(params.conversation);
     const message: QaBusMessage = {
@@ -100,6 +96,7 @@ export function createQaBusState() {
       threadId: params.threadId,
       threadTitle: params.threadTitle,
       replyToId: params.replyToId,
+      attachments: params.attachments?.map((attachment) => ({ ...attachment })) ?? [],
       reactions: [],
     };
     messages.set(message.id, message);
@@ -138,6 +135,7 @@ export function createQaBusState() {
         threadId: input.threadId,
         threadTitle: input.threadTitle,
         replyToId: input.replyToId,
+        attachments: input.attachments,
       });
       pushEvent({
         kind: "inbound-message",
@@ -159,6 +157,7 @@ export function createQaBusState() {
         timestamp: input.timestamp,
         threadId: input.threadId ?? threadId,
         replyToId: input.replyToId,
+        attachments: input.attachments,
       });
       pushEvent({
         kind: "outbound-message",

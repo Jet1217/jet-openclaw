@@ -4,9 +4,13 @@ import {
   resolveMergedAccountConfig,
   type OpenClawConfig,
 } from "openclaw/plugin-sdk/account-core";
+import {
+  resolveChannelStreamingBlockEnabled,
+  resolveChannelStreamingChunkMode,
+} from "openclaw/plugin-sdk/channel-streaming";
 import type { WhatsAppAccountConfig } from "./runtime-api.js";
 
-function resolveWhatsAppAccountConfig(
+function _resolveWhatsAppAccountConfig(
   cfg: OpenClawConfig,
   accountId: string,
 ): WhatsAppAccountConfig | undefined {
@@ -20,7 +24,7 @@ export function resolveMergedWhatsAppAccountConfig(params: {
   const rootCfg = params.cfg.channels?.whatsapp;
   const accountId = params.accountId?.trim() || rootCfg?.defaultAccount || DEFAULT_ACCOUNT_ID;
   const merged = resolveMergedAccountConfig<WhatsAppAccountConfig>({
-    channelConfig: rootCfg as WhatsAppAccountConfig | undefined,
+    channelConfig: rootCfg,
     accounts: rootCfg?.accounts as Record<string, Partial<WhatsAppAccountConfig>> | undefined,
     accountId,
     omitKeys: ["defaultAccount"],
@@ -28,5 +32,7 @@ export function resolveMergedWhatsAppAccountConfig(params: {
   return {
     accountId,
     ...merged,
+    chunkMode: resolveChannelStreamingChunkMode(merged) ?? merged.chunkMode,
+    blockStreaming: resolveChannelStreamingBlockEnabled(merged) ?? merged.blockStreaming,
   };
 }
