@@ -28,7 +28,7 @@ processes = ["app"]
 [[http_service.checks]]
   interval = "60s"
   timeout = "30s"
-  grace_period = "60m"
+  grace_period = "2m"
   method = "GET"
   path = "/healthz"
 
