@@ -1,13 +1,19 @@
 ---
 name: chraft-generate-image
-description: Generate images via the Ploval media API using the user's sandbox credentials. Supports optional reference images via input_images (string array; one URL or many). Defaults to Nano Banana 2 (model alias "nano-banana-2"). Use whenever the user wants to create, generate, draw, edit from a reference, or make any kind of image. Authentication uses the sandbox user context (chraftUseKey); no API key prompts.
+description: Generate, edit, or inpaint images via the Ploval media API using the user's sandbox credentials. Supports text-to-image, image editing (pass input_images), and inpainting (describe what to replace in a region). Defaults to Nano Banana 2 (model alias "nano-banana-2"). Use whenever the user wants to create, generate, draw, edit, retouch, replace a region, or inpaint any kind of image. Authentication uses the sandbox user context (chraftUseKey); no API key prompts.
 ---
 
-# Ploval — Image Generation
+# Ploval — Image Generation, Editing & Inpainting
 
-This skill generates images by calling Ploval's `/api/openclaw/media/image` endpoint, then polls until the job completes and returns the image URLs.
+This skill covers three modes — all using the same `/api/openclaw/media/image` endpoint:
 
-The skill uses two calls: one to start the job, one (repeated) to check if it's done. Image generation is async because it takes 5–30 seconds depending on the model.
+| Mode              | When to use                                                                            | Key parameters                                                            |
+| ----------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| **Text-to-image** | No reference image; generate from a prompt                                             | `prompt` only                                                             |
+| **Edit**          | Modify an existing image (change background, swap object, adjust style)                | `input_images: [url]` + descriptive `prompt`                              |
+| **Inpaint**       | Replace or fill a specific region of an image (remove object, change outfit, fix area) | `input_images: [url]` + `prompt` describing what the region should become |
+
+The skill uses two calls: one to start the job, one (repeated) to check if it's done. Generation is async and takes 5–30 seconds.
 
 ---
 
@@ -40,9 +46,11 @@ If `chraftUseKey` is empty, tell the user their sandbox hasn't been linked to a 
 
 Send a POST request with the model and prompt. The response immediately returns an `imageId` — the actual image isn't ready yet.
 
-**Reference images (optional):** Pass publicly reachable image URLs so the model can use them as conditioning. Use **`input_images` only** — a string array. One reference image is `["https://..."]`; multiple references are more elements in the same array (duplicates are removed server-side, order preserved).
+**Reference images (`input_images`):** Pass publicly reachable image URLs so the model can use them as conditioning. Use **`input_images` only** — a string array. One image is `["https://..."]`; multiple references are more elements in the same array (duplicates are removed server-side, order preserved).
 
-When reference images are provided, Nano Banana 2 automatically routes to the edit endpoint server-side. Use `nano-banana-2` as the model value.
+- **Edit mode:** `input_images` = the image to edit; `prompt` = what change to make
+- **Inpaint mode:** `input_images` = the image to inpaint; `prompt` = describe what the target region should look like (e.g. "replace the red jacket with a blue hoodie", "remove the person in the background")
+- When `input_images` is provided, Nano Banana 2 automatically routes to the edit/inpaint endpoint server-side — no model change needed.
 
 ```javascript
 const DEFAULT_MODEL = "nano-banana-2";
@@ -56,7 +64,7 @@ const payload = {
   output_format: "png",
 };
 
-// Optional: one or more reference images (omit if text-only)
+// Edit / inpaint: include the source image URL(s)
 if (referenceImageUrls?.length) {
   payload.input_images = referenceImageUrls;
 }
@@ -77,6 +85,16 @@ const { imageId, creditsConsumed } = await res.json();
 
 See `references/image-models.md` for the full model list with descriptions.
 
+**Model selection for edit / inpaint:**
+
+| Need                              | Recommended model       |
+| --------------------------------- | ----------------------- |
+| General edit or inpaint (default) | `nano-banana-2`         |
+| Context-aware precise edit        | `flux-kontext-pro`      |
+| Highest-quality context edit      | `flux-kontext-max`      |
+| GPT-powered edit                  | `gpt-image-1-edit`      |
+| Artistic style edit               | `seedream-v5-lite-edit` |
+
 **Aspect ratio quick reference:**
 
 | Use case                  | Value  |
@@ -92,7 +110,7 @@ See `references/image-models.md` for the full model list with descriptions.
 
 ## Step 2 — Poll for completion
 
-Poll the status endpoint every 3 seconds. Image generation usually finishes within 30 seconds; allow up to 120 seconds before giving up.
+Poll the status endpoint every 3 seconds. Generation usually finishes within 30 seconds; allow up to 120 seconds before giving up.
 
 ```javascript
 const deadline = Date.now() + 120_000;
@@ -150,7 +168,7 @@ All errors return `{ success: false, error: "..." }`. A `402` also includes `err
 ## Example interactions
 
 **"Generate a futuristic city at night"**
-→ default `model: "nano-banana-2"`, prompt as-is
+→ text-to-image, default `model: "nano-banana-2"`, prompt as-is
 
 **"Make a 16:9 landscape wallpaper of mountains at sunset"**
 → `aspect_ratio: "16:9"`, default model, prompt as-is
@@ -158,8 +176,23 @@ All errors return `{ success: false, error: "..." }`. A `402` also includes `err
 **"Generate 4 logo concepts for a coffee brand"**
 → `num_outputs: 4`, `aspect_ratio: "1:1"`
 
-**"Edit this product photo to add holiday packaging"** (user provides image URL(s))
-→ `input_images: [url1, ...]`, same default model, prompt describes the edit
+**"Edit this product photo to add holiday packaging"** (user provides image URL)
+→ edit mode: `input_images: [url]`, `prompt: "add holiday packaging"`, default model
+
+**"Change the background to a snowy forest"** (user provides image URL)
+→ edit mode: `input_images: [url]`, `prompt: "change the background to a snowy forest"`, `model: "nano-banana-2"`
+
+**"Remove the person standing in the background"** (user provides image URL)
+→ inpaint mode: `input_images: [url]`, `prompt: "remove the person in the background, fill with natural scenery"`, default model
+
+**"Replace the red jacket with a blue hoodie"** (user provides image URL)
+→ inpaint mode: `input_images: [url]`, `prompt: "replace the red jacket with a blue hoodie"`, default model
+
+**"Fix the blurry area in the top-right corner"** (user provides image URL)
+→ inpaint mode: `input_images: [url]`, `prompt: "clean sharp continuation of the background in the top-right corner"`, default model
 
 **"Create a photorealistic portrait, high quality"**
 → `model: "flux-2-pro"`, `aspect_ratio: "2:3"` (see references for full alias list)
+
+**"Edit this image with precise context-aware changes"** (user provides image URL)
+→ edit mode: `input_images: [url]`, `model: "flux-kontext-pro"`, descriptive prompt
