@@ -1,20 +1,31 @@
-# Chraft Image Models
+# Ploval Image Models
 
-Pass one of these **exact** strings as the `model` field (they match the server `ImageModel` enum).  
-**Default when the user does not specify a model:** `fal-ai/nano-banana-2` (Nano Banana 2 on Fal).
+Pass one of these **alias strings** as the `model` field.  
+**Default when the user does not specify a model:** `nano-banana-2`
 
-| Model                                             | Description                                                                                  |
-| ------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `fal-ai/nano-banana-2`                            | **Default** — latest Nano Banana 2; supports optional reference images (single or multiple). |
-| `fal-ai/nano-banana-2/edit`                       | Same Fal routing as `fal-ai/nano-banana-2`; use when you want an explicit edit model id.     |
-| `google/nano-banana`                              | Fast, cost-effective                                                                         |
-| `google/nano-banana-pro`                          | Higher-quality Nano Banana Pro                                                               |
-| `black-forest-labs/flux-2-pro`                    | Flux 2 Pro — strong photorealism; supports multiple reference images on Fal                  |
-| `fal-ai/bytedance/seedream/v4.5/text-to-image`    | Seedream v4.5                                                                                |
-| `fal-ai/bytedance/seedream/v5/lite/text-to-image` | Seedream v5 Lite                                                                             |
-| `xai/grok-imagine-image`                          | Grok Imagine (reference: first image only if multiple supplied)                              |
+| Alias                   | Description                                                                          |
+| ----------------------- | ------------------------------------------------------------------------------------ |
+| `nano-banana-2`         | **Default** — Nano Banana 2; supports optional reference images (single or multiple) |
+| `nano-banana-2-edit`    | Explicit edit variant of Nano Banana 2                                               |
+| `nano-banana`           | Nano Banana (fast, cost-effective)                                                   |
+| `nano-banana-pro`       | Nano Banana Pro (higher quality)                                                     |
+| `flux-2-pro`            | Flux 2 Pro — strong photorealism; supports multiple reference images                 |
+| `flux-1.1-pro`          | Flux 1.1 Pro                                                                         |
+| `flux-pro`              | Flux Pro                                                                             |
+| `flux-schnell`          | Flux Schnell (fastest, lowest cost)                                                  |
+| `flux-dev`              | Flux Dev                                                                             |
+| `flux-kontext-pro`      | Flux Kontext Pro — context-aware editing                                             |
+| `flux-kontext-max`      | Flux Kontext Max — highest-quality context editing                                   |
+| `seedream-v4.5`         | Seedream v4.5                                                                        |
+| `seedream-v5-lite`      | Seedream v5 Lite                                                                     |
+| `seedream-v5-lite-edit` | Seedream v5 Lite edit variant                                                        |
+| `grok-imagine`          | Grok Imagine (reference: first image only if multiple supplied)                      |
+| `gpt-image-1`           | GPT Image 1                                                                          |
+| `gpt-image-1-edit`      | GPT Image 1 edit variant                                                             |
+| `gpt-image-1.5`         | GPT Image 1.5                                                                        |
+| `gpt-image-1.5-edit`    | GPT Image 1.5 edit variant                                                           |
 
-When the user wants maximum quality photorealism, suggest `black-forest-labs/flux-2-pro`.
+When the user wants maximum quality photorealism, suggest `flux-2-pro`.
 
 Pass reference URLs in the request body as **`input_images`**: a string array (`["https://..."]` for one image, or more strings for multiple).
 
