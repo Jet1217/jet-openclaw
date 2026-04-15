@@ -30,20 +30,10 @@ These are the preferred models for all new generations and edits:
 | Precise GPT edit               | `gpt-image-1.5-edit`                    |
 | Artistic edit                  | `seedream-v5-lite-edit`                 |
 
-## Legacy Models (Avoid for New Work)
-
-These older models are still available but should not be used as defaults:
+## Other Models
 
 | Alias              | Description                                                     |
 | ------------------ | --------------------------------------------------------------- |
-| `nano-banana`      | Nano Banana (original, superseded by nano-banana-2)             |
-| `flux-1.1-pro`     | Flux 1.1 Pro (older generation)                                 |
-| `flux-pro`         | Flux Pro (older generation)                                     |
-| `flux-schnell`     | Flux Schnell (oldest, lowest quality)                           |
-| `flux-dev`         | Flux Dev (older generation)                                     |
-| `flux-kontext-pro` | Flux Kontext Pro — context-aware editing (older)                |
-| `flux-kontext-max` | Flux Kontext Max — context editing (older)                      |
-| `seedream-v4.5`    | Seedream v4.5 (superseded by v5)                                |
 | `grok-imagine`     | Grok Imagine (reference: first image only if multiple supplied) |
 | `gpt-image-1`      | GPT Image 1 (superseded by 1.5)                                 |
 | `gpt-image-1-edit` | GPT Image 1 edit variant (superseded by 1.5-edit)               |
