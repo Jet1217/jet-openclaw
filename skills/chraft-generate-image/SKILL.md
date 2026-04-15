@@ -1,6 +1,6 @@
 ---
 name: chraft-generate-image
-description: Generate, edit, or inpaint images via the Ploval media API using the user's sandbox credentials. Supports text-to-image, image editing (pass input_images), and inpainting (describe what to replace in a region). Defaults to Nano Banana 2 (model alias "nano-banana-2"). Use whenever the user wants to create, generate, draw, edit, retouch, replace a region, or inpaint any kind of image. Authentication uses the sandbox user context (chraftUseKey); no API key prompts.
+description: Generate, edit, or inpaint images via the Ploval media API using the user's sandbox credentials. Supports text-to-image, image editing (pass input_images), and inpainting (describe what to replace in a region). Defaults to Nano Banana 2 (model alias "nano-banana-2") for text-to-image and Nano Banana 2 edit for edit/inpaint. Use whenever the user wants to create, generate, draw, edit, retouch, replace a region, or inpaint any kind of image. Authentication uses the sandbox user context (chraftUseKey); no API key prompts.
 ---
 
 # Ploval — Image Generation, Editing & Inpainting
@@ -85,14 +85,25 @@ const { imageId, creditsConsumed } = await res.json();
 
 See `references/image-models.md` for the full model list with descriptions.
 
+**Model selection for text-to-image:**
+
+| Need                            | Recommended model  |
+| ------------------------------- | ------------------ |
+| General generation (default)    | `nano-banana-2`    |
+| Higher quality / more detail    | `nano-banana-pro`  |
+| Photorealistic, multi-reference | `flux-2-pro`       |
+| GPT-powered, high fidelity      | `gpt-image-1.5`    |
+| Artistic / stylized             | `seedream-v5-lite` |
+
 **Model selection for edit / inpaint:**
 
 | Need                              | Recommended model       |
 | --------------------------------- | ----------------------- |
 | General edit or inpaint (default) | `nano-banana-2`         |
-| Context-aware precise edit        | `flux-kontext-pro`      |
-| Highest-quality context edit      | `flux-kontext-max`      |
-| GPT-powered edit                  | `gpt-image-1-edit`      |
+| Explicit edit variant             | `nano-banana-2-edit`    |
+| Higher-quality edit               | `nano-banana-pro`       |
+| Photorealistic context edit       | `flux-2-pro`            |
+| GPT-powered edit                  | `gpt-image-1.5-edit`    |
 | Artistic style edit               | `seedream-v5-lite-edit` |
 
 **Aspect ratio quick reference:**
@@ -192,7 +203,13 @@ All errors return `{ success: false, error: "..." }`. A `402` also includes `err
 → inpaint mode: `input_images: [url]`, `prompt: "clean sharp continuation of the background in the top-right corner"`, default model
 
 **"Create a photorealistic portrait, high quality"**
-→ `model: "flux-2-pro"`, `aspect_ratio: "2:3"` (see references for full alias list)
+→ `model: "nano-banana-pro"` or `model: "flux-2-pro"`, `aspect_ratio: "2:3"` (see references for full alias list)
+
+**"Create a high-fidelity AI image with GPT"**
+→ `model: "gpt-image-1.5"`, prompt as-is
+
+**"Edit this image with high fidelity GPT changes"** (user provides image URL)
+→ edit mode: `input_images: [url]`, `model: "gpt-image-1.5-edit"`, descriptive prompt
 
 **"Edit this image with precise context-aware changes"** (user provides image URL)
-→ edit mode: `input_images: [url]`, `model: "flux-kontext-pro"`, descriptive prompt
+→ edit mode: `input_images: [url]`, `model: "nano-banana-pro"` or `model: "flux-2-pro"`, descriptive prompt
