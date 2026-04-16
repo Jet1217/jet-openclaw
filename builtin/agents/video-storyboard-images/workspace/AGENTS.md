@@ -77,21 +77,33 @@ If no anchor files exist (director stated `characters: none`, `assets: none`, `s
 
 - Use IMAGE PROMPTs as-is.
 
+### Aspect Ratio Rule
+
+**All shot keyframes MUST use the same `aspect_ratio` — the video's target output ratio.**
+
+- Determine the video's target ratio from the director's brief (e.g. `9:16` for TikTok/Reels, `16:9` for YouTube, `1:1` for Instagram Square).
+- Apply this single ratio to every shot in Phase 2 without exception.
+- Never mix aspect ratios across shots — inconsistent sizes break the video-generator's I2V pipeline.
+- If the brief does not specify a ratio, default to `16:9`.
+
+**NEVER use the `chraft-storyboard` skill for shot keyframes.** That skill generates a multi-panel grid image (all shots composited into one grid with borders and dividers), which cannot be used as individual I2V keyframes. Always call `chraft-generate-image` for each shot individually.
+
 ### Workflow
 
 1. Read the storyboard — identify all shots and their IMAGE PROMPT fields
-2. If anchor files exist, read them for reference snippets and reference image URLs
-3. For each shot, call `chraft-generate-image` with:
+2. Determine the single `aspect_ratio` for all shots from the director's brief (default: `16:9`)
+3. If anchor files exist, read them for reference snippets and reference image URLs
+4. For each shot, call `chraft-generate-image` with:
    - `model`: `nano-banana-2` (default) or `nano-banana-pro` (hero shots)
    - `prompt`: the IMAGE PROMPT from the storyboard card (with consistency note appended if characters exist)
-   - `aspect_ratio`: match the video's aspect ratio (9:16, 16:9, or 1:1)
+   - `aspect_ratio`: the single target ratio determined in step 2 — same for every shot
    - `num_outputs`: 1 per shot (unless user requests alternatives)
-4. Collect all image URLs
-5. For each shot, decide if an end frame is needed:
+5. Collect all image URLs
+6. For each shot, decide if an end frame is needed:
    - Use end frame when shot-to-shot continuity is critical, when the shot ends on a specific pose/composition, or when transition precision matters.
    - Skip end frame for simple standalone shots.
-6. Save results to `/data/projects/<slug>/storyboard-images.md` — include `start_frame_url` for every shot and optional `end_frame_url` when generated.
-7. Present all frames to the user in order
+7. Save results to `/data/projects/<slug>/storyboard-images.md` — include `start_frame_url` for every shot and optional `end_frame_url` when generated.
+8. Present all frames to the user in order
 
 ### Batch Processing
 

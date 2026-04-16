@@ -54,7 +54,21 @@ Suggested query patterns:
 "[niche] video aesthetic inspiration"
 ```
 
-#### B. Fetch specific pages
+#### B. Image search — REQUIRED
+
+**Always** run at least one dedicated image search alongside the web search. Use `WebSearch` with image-focused queries to find publicly accessible images — choose search terms and sources based on what best fits the topic and style.
+
+Then use `WebFetch` on any result pages to extract direct image URLs (`.jpg`, `.png`, `.webp`).
+
+**Display every found image inline** using Markdown:
+
+```markdown
+![caption describing the image](https://direct-image-url.jpg)
+```
+
+Include as many images as are useful — let the topic and context determine the quantity.
+
+#### C. Fetch specific pages
 
 Use `WebFetch` to retrieve content from discovered URLs — especially:
 
@@ -65,15 +79,15 @@ Use `WebFetch` to retrieve content from discovered URLs — especially:
 
 When fetching, extract:
 
-- Image URLs (for visual reference)
+- Image URLs (for visual reference) — embed them directly as Markdown images
 - Key descriptive text (for prompt building)
 - Style vocabulary (color, texture, motion, mood words)
 
-#### C. Multiple parallel searches
+#### D. Multiple parallel searches
 
 Run several `WebSearch` calls in parallel for efficiency:
 
-- One for **visual/image** references
+- One for **visual/image** references (dedicated image search as above)
 - One for **text/concept** references
 - One for **platform-specific trends**
 
@@ -90,7 +104,7 @@ Present findings in this structure:
 [1–2 sentence summary of what you found]
 
 ### Visual References
-[Image URLs or embedded markdown images, with captions]
+[Images embedded as `![caption](url)` — every image must render inline, not just listed as a URL.]
 
 ### Style Keywords
 [10–20 words/phrases that capture the visual language — usable directly in prompts]

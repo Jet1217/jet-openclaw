@@ -12,6 +12,7 @@ set -eu
 
 DATA_DIR="${DATA_DIR:-/data}"
 AGENTS_SRC="/app/builtin/agents"
+BUILTIN_SKILLS_LIST="/app/builtin/.builtin-skills"
 
 # Ensure the shared projects directory exists for cross-agent project isolation.
 mkdir -p "${DATA_DIR}/projects"
@@ -42,20 +43,30 @@ if [ -d "$AGENTS_SRC" ]; then
       if [ ! -e "$dst_file" ]; then
         cp -r "$f" "$dst_file"
       elif [ "$fname" = "skills" ] && [ -d "$f" ]; then
-        # Merge new skill dirs from image into existing /data/workspace/skills
-        # so that newly added builtin skills appear without overwriting user skills.
+        # Merge skill dirs from image into the existing skills directory.
+        #
+        # Two categories:
+        #   Builtin skills  — listed as "<agent>:<skill>" in /app/builtin/.builtin-skills.
+        #                     Always replaced with the image version so updates are
+        #                     delivered on every container restart after an image upgrade.
+        #   User skills     — anything NOT in the whitelist.  Never overwritten so
+        #                     user customisations survive upgrades.
         for skill_src in "$f"/*; do
           [ -e "$skill_src" ] || continue
           skill_name="$(basename "$skill_src")"
           skill_dst="${dst_file}/${skill_name}"
-          # Only skip if the skill dir already has a SKILL.md (i.e. it was
-          # previously seeded correctly). An empty or partial directory is
-          # treated as if it doesn't exist so the skill gets re-seeded.
-          if [ -e "${skill_dst}/SKILL.md" ]; then
-            continue
+          if grep -qx "${agent_name}:${skill_name}" "$BUILTIN_SKILLS_LIST" 2>/dev/null; then
+            # Builtin skill: always update from image to deliver new versions.
+            rm -rf "$skill_dst"
+            cp -r "$skill_src" "$skill_dst"
+          else
+            # User skill: only seed if not already present.
+            if [ -e "${skill_dst}/SKILL.md" ]; then
+              continue
+            fi
+            rm -rf "$skill_dst"
+            cp -r "$skill_src" "$skill_dst"
           fi
-          rm -rf "$skill_dst"
-          cp -r "$skill_src" "$skill_dst"
         done
       fi
     done

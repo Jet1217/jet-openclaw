@@ -1,0 +1,9 @@
+# Builtin skills whitelist.
+# Format: <agent>:<skill>
+# Skills listed here are always replaced with the image version on container
+# start, so updates are delivered automatically after an image upgrade.
+# Skills NOT listed here are treated as user skills and never overwritten.
+main:chraft-upload-file
+main:chraft-generate-music
+music-composer:chraft-generate-music
+video-editor:ffmpeg-edit
