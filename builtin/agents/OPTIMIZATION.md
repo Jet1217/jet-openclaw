@@ -36,6 +36,15 @@ Both agents and skills are valid things to create. Use the right one based on wh
 
 All agent files must follow the same pattern as existing agents (e.g. `music-composer` at `/data/workspace-music-composer/`, `video-director` at `/data/workspace-video-director/`).
 
+### Required skills for every new agent:
+
+Every new agent **MUST** install the `self-improving-agent` skill under
+`/data/workspace-<agent-name>/skills/self-improving-agent/`. This skill is what
+lets the agent observe its own work, update its MEMORY.md, and evolve over time.
+
+An agent without `self-improving-agent` is a frozen agent — it will never
+learn from experience, even if dreaming is enabled at the platform level.
+
 ---
 
 ## 2. Error Memory — Learn and Don't Repeat
@@ -56,7 +65,41 @@ This rule applies to all agents including `main`. Never repeat a previously docu
 
 ---
 
-## 3. Agent vs. Skill — Decision Table
+## 3. Auto-Save Memory — Every Agent, Every Session
+
+Every agent (main, subagents, third-party agents) **MUST** actively save
+memorable information, not wait for automatic triggers. Relying only on the
+platform's memory flush is insufficient — short subagent sessions almost never
+hit the token threshold that triggers it.
+
+### What to save, when:
+
+1. **User facts & preferences** — the moment a user reveals something durable
+   (stack preference, project naming conventions, brand tone, past mistakes to
+   avoid), append it to `MEMORY.md` under `## Key Facts About the User` or
+   `## Preferences & Decisions` before moving on.
+2. **Lessons learned** — any error + fix pair goes under `## Lessons Learned`
+   in the same turn the fix is verified (see section 2).
+3. **Recurring project context** — when the same project slug is seen again,
+   update `MEMORY.md` with what was learned during that project run.
+4. **Daily observations** — significant events that are not yet durable enough
+   for `MEMORY.md` go to `memory/YYYY-MM-DD.md`. Dreaming will promote them
+   into `MEMORY.md` once they recur and score highly enough.
+
+### Why this matters
+
+The platform runs a background **dreaming** pass that scores short-term recall
+signals and promotes qualified entries into long-term memory. Dreaming can
+only promote what the agent has written down. If the agent silently completes
+tasks without journaling, nothing survives the session and the agent never
+evolves.
+
+**Rule of thumb:** if you would want a future version of yourself to know it,
+write it now.
+
+---
+
+## 4. Agent vs. Skill — Decision Table
 
 | User says                     | Correct action                                            |
 | ----------------------------- | --------------------------------------------------------- |
@@ -69,7 +112,7 @@ This rule applies to all agents including `main`. Never repeat a previously docu
 
 ---
 
-## 4. Spawning Agents — Always Pass `agentId`
+## 5. Spawning Agents — Always Pass `agentId`
 
 When using `sessions_spawn`, you **MUST** always pass the `agentId` parameter with the exact agent ID of the target agent.
 
@@ -85,7 +128,7 @@ sessions_spawn(label: "video-script", task: "...", mode: "run")
 
 ---
 
-## 5. Project Folder Isolation
+## 6. Project Folder Isolation
 
 Different projects **MUST** store their outputs in separate project folders. All project data lives under a **shared** `/data/projects/` directory so that every agent can read and write to the same project files directly — no cross-workspace path juggling required.
 
@@ -143,6 +186,6 @@ project: coffee-ad-tiktok
 
 ---
 
-## 6. Language
+## 7. Language
 
 All code comments and file content must be in **English**.
