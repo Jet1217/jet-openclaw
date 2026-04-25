@@ -1,9 +1,9 @@
 ---
 name: chraft-generate-image
-description: Generate, edit, or inpaint images via the Ploval media API using the user's sandbox credentials. Supports text-to-image, image editing (pass input_images), and inpainting (describe what to replace in a region). Defaults to Nano Banana 2 (model alias "nano-banana-2") for text-to-image and Nano Banana 2 edit for edit/inpaint. Use whenever the user wants to create, generate, draw, edit, retouch, replace a region, or inpaint any kind of image. Authentication uses the sandbox user context (chraftUseKey); no API key prompts.
+description: Generate, edit, or inpaint images via the Chraft media API using the user's sandbox credentials. Supports text-to-image, image editing (pass input_images), and inpainting (describe what to replace in a region). Defaults to Nano Banana 2 (model alias "nano-banana-2") for text-to-image and Nano Banana 2 edit for edit/inpaint. Use whenever the user wants to create, generate, draw, edit, retouch, replace a region, or inpaint any kind of image. Authentication uses the sandbox user context (chraftUseKey); no API key prompts.
 ---
 
-# Ploval — Image Generation, Editing & Inpainting
+# Chraft — Image Generation, Editing & Inpainting
 
 This skill covers three modes — all using the same `/api/openclaw/media/image` endpoint:
 
@@ -19,7 +19,7 @@ The skill uses two calls: one to start the job, one (repeated) to check if it's 
 
 ## Load credentials from sandbox context
 
-Read the user context file — this is where the sandbox stores the Ploval API key. The key is already injected; there's nothing to configure.
+Read the user context file — this is where the sandbox stores the Chraft API key. The key is already injected; there's nothing to configure.
 
 ```javascript
 import fs from "fs";
@@ -28,7 +28,7 @@ import path from "path";
 const stateDir = process.env.OPENCLAW_STATE_DIR || "/data";
 const ctx = JSON.parse(fs.readFileSync(path.join(stateDir, "user-context.json"), "utf8"));
 const { chraftUseKey } = ctx;
-const CHRAFT_BASE_URL = process.env.CHRAFT_BASE_URL || "https://ploval.ai";
+const CHRAFT_BASE_URL = process.env.CHRAFT_BASE_URL || "https://chraft.ai";
 
 function authHeaders() {
   return {
@@ -38,7 +38,7 @@ function authHeaders() {
 }
 ```
 
-If `chraftUseKey` is empty, tell the user their sandbox hasn't been linked to a Ploval account yet.
+If `chraftUseKey` is empty, tell the user their sandbox hasn't been linked to a Chraft account yet.
 
 ---
 
@@ -168,7 +168,7 @@ If multiple images were requested, show all of them.
 | ------ | ----------------------------------------- | -------------------------------------------- |
 | `401`  | Key not found or inactive                 | Check that the sandbox is running and paired |
 | `400`  | Missing `model`/`prompt` or invalid model | Fix the request parameters                   |
-| `402`  | Insufficient credits                      | Tell the user to top up credits on Ploval    |
+| `402`  | Insufficient credits                      | Tell the user to top up credits on Chraft    |
 | `502`  | AI provider error                         | Retry once; if persistent, report            |
 | `500`  | Database error                            | Retry once                                   |
 

@@ -1,11 +1,11 @@
 ---
 name: chraft-image-relight
-description: Relight an existing image with new lighting conditions using the Ploval relight API. Use whenever the user wants to change the lighting of an image, add dramatic lighting, change light direction, add studio lighting, make it look like sunset/neon/candlelight, or adjust brightness. Authentication uses the sandbox user context (chraftUseKey); no API key prompts.
+description: Relight an existing image with new lighting conditions using the Chraft relight API. Use whenever the user wants to change the lighting of an image, add dramatic lighting, change light direction, add studio lighting, make it look like sunset/neon/candlelight, or adjust brightness. Authentication uses the sandbox user context (chraftUseKey); no API key prompts.
 ---
 
-# Ploval — Image Relight
+# Chraft — Image Relight
 
-This skill relights an existing image by calling Ploval's `/api/openclaw/media/relight` endpoint, then polls until complete.
+This skill relights an existing image by calling Chraft's `/api/openclaw/media/relight` endpoint, then polls until complete.
 
 The model preserves all subject details, composition, and style — only the lighting changes.
 
@@ -20,7 +20,7 @@ import path from "path";
 const stateDir = process.env.OPENCLAW_STATE_DIR || "/data";
 const ctx = JSON.parse(fs.readFileSync(path.join(stateDir, "user-context.json"), "utf8"));
 const { chraftUseKey } = ctx;
-const CHRAFT_BASE_URL = process.env.CHRAFT_BASE_URL || "https://ploval.ai";
+const CHRAFT_BASE_URL = process.env.CHRAFT_BASE_URL || "https://chraft.ai";
 
 function authHeaders() {
   return {
@@ -30,7 +30,7 @@ function authHeaders() {
 }
 ```
 
-If `chraftUseKey` is empty, tell the user their sandbox hasn't been linked to a Ploval account yet.
+If `chraftUseKey` is empty, tell the user their sandbox hasn't been linked to a Chraft account yet.
 
 ---
 
@@ -131,7 +131,7 @@ Style: dramatic · Light angle: 270° · Credits used: 10
 | ------ | ------------------------- | -------------------------------------------- |
 | `401`  | Key not found or inactive | Check that the sandbox is running and paired |
 | `400`  | Missing `image_url`       | Fix the request parameters                   |
-| `402`  | Insufficient credits      | Tell the user to top up credits on Ploval    |
+| `402`  | Insufficient credits      | Tell the user to top up credits on Chraft    |
 | `502`  | AI provider error         | Retry once; if persistent, report            |
 | `500`  | Database error            | Retry once                                   |
 

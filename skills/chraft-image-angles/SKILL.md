@@ -1,11 +1,11 @@
 ---
 name: chraft-image-angles
-description: Generate a new view of a subject from a different camera angle using the Ploval angles API. Use whenever the user wants to see an image from a different angle, rotate the camera, change the viewpoint, show the back/side/front of a subject, or generate a multi-angle view. Authentication uses the sandbox user context (chraftUseKey); no API key prompts.
+description: Generate a new view of a subject from a different camera angle using the Chraft angles API. Use whenever the user wants to see an image from a different angle, rotate the camera, change the viewpoint, show the back/side/front of a subject, or generate a multi-angle view. Authentication uses the sandbox user context (chraftUseKey); no API key prompts.
 ---
 
-# Ploval — Multiple Angles Generation
+# Chraft — Multiple Angles Generation
 
-This skill generates a new image of the same subject from a different camera angle by calling Ploval's `/api/openclaw/media/angles` endpoint, then polls until complete.
+This skill generates a new image of the same subject from a different camera angle by calling Chraft's `/api/openclaw/media/angles` endpoint, then polls until complete.
 
 The model keeps the subject identical — only the camera position changes. Works best with people, characters, objects, and products.
 
@@ -20,7 +20,7 @@ import path from "path";
 const stateDir = process.env.OPENCLAW_STATE_DIR || "/data";
 const ctx = JSON.parse(fs.readFileSync(path.join(stateDir, "user-context.json"), "utf8"));
 const { chraftUseKey } = ctx;
-const CHRAFT_BASE_URL = process.env.CHRAFT_BASE_URL || "https://ploval.ai";
+const CHRAFT_BASE_URL = process.env.CHRAFT_BASE_URL || "https://chraft.ai";
 
 function authHeaders() {
   return {
@@ -30,7 +30,7 @@ function authHeaders() {
 }
 ```
 
-If `chraftUseKey` is empty, tell the user their sandbox hasn't been linked to a Ploval account yet.
+If `chraftUseKey` is empty, tell the user their sandbox hasn't been linked to a Chraft account yet.
 
 ---
 
@@ -120,7 +120,7 @@ Angle: 90° horizontal · Credits used: 10
 | ------ | ------------------------- | -------------------------------------------- |
 | `401`  | Key not found or inactive | Check that the sandbox is running and paired |
 | `400`  | Missing `image_url`       | Fix the request parameters                   |
-| `402`  | Insufficient credits      | Tell the user to top up credits on Ploval    |
+| `402`  | Insufficient credits      | Tell the user to top up credits on Chraft    |
 | `502`  | AI provider error         | Retry once; if persistent, report            |
 | `500`  | Database error            | Retry once                                   |
 

@@ -1,11 +1,11 @@
 ---
 name: chraft-generate-video
-description: Generate videos via the Ploval media API. Use this skill whenever the user wants to create, generate, make, or animate a video — including text-to-video (describe a scene) and image-to-video (animate an existing image). Authentication is handled automatically from the sandbox user context; no API key setup required. Use this even if the user says "make a clip", "create a reel", or "animate this photo".
+description: Generate videos via the Chraft media API. Use this skill whenever the user wants to create, generate, make, or animate a video — including text-to-video (describe a scene) and image-to-video (animate an existing image). Authentication is handled automatically from the sandbox user context; no API key setup required. Use this even if the user says "make a clip", "create a reel", or "animate this photo".
 ---
 
-# Ploval — Video Generation
+# Chraft — Video Generation
 
-This skill generates videos by calling Ploval's `/api/openclaw/media/video` endpoint, then polls until the job completes. It supports both text-to-video (T2V) and image-to-video (I2V).
+This skill generates videos by calling Chraft's `/api/openclaw/media/video` endpoint, then polls until the job completes. It supports both text-to-video (T2V) and image-to-video (I2V).
 
 Videos take longer than images — typically 1–3 minutes — because the AI model has to render multiple frames. The polling loop handles this transparently.
 
@@ -31,7 +31,7 @@ import path from "path";
 const stateDir = process.env.OPENCLAW_STATE_DIR || "/data";
 const ctx = JSON.parse(fs.readFileSync(path.join(stateDir, "user-context.json"), "utf8"));
 const { chraftUseKey } = ctx;
-const CHRAFT_BASE_URL = process.env.CHRAFT_BASE_URL || "https://ploval.ai";
+const CHRAFT_BASE_URL = process.env.CHRAFT_BASE_URL || "https://chraft.ai";
 
 function authHeaders() {
   return {
@@ -41,7 +41,7 @@ function authHeaders() {
 }
 ```
 
-If `chraftUseKey` is empty, tell the user their sandbox hasn't been linked to a Ploval account yet.
+If `chraftUseKey` is empty, tell the user their sandbox hasn't been linked to a Chraft account yet.
 
 ---
 
@@ -159,7 +159,7 @@ Model: kling3-standard · Duration: 5s · Credits used: 42
 | ------ | ----------------------------------------- | -------------------------------------------- |
 | `401`  | Key not found or inactive                 | Check that the sandbox is running and paired |
 | `400`  | Missing `model`/`prompt` or invalid model | Fix the request parameters                   |
-| `402`  | Insufficient credits                      | Tell the user to top up credits on Ploval    |
+| `402`  | Insufficient credits                      | Tell the user to top up credits on Chraft    |
 | `502`  | AI provider error                         | Retry once; if persistent, report            |
 | `500`  | Database error                            | Retry once                                   |
 
