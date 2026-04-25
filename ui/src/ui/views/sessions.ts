@@ -63,8 +63,7 @@ export type SessionsProps = {
   onRestoreCheckpoint: (sessionKey: string, checkpointId: string) => void | Promise<void>;
 };
 
-const THINK_LEVELS = ["", "off", "minimal", "low", "medium", "high", "xhigh"] as const;
-const BINARY_THINK_LEVELS = ["", "off", "on"] as const;
+const DEFAULT_THINK_LEVELS = ["off", "minimal", "low", "medium", "high"] as const;
 const VERBOSE_LEVELS = [
   { value: "", label: "inherit" },
   { value: "off", label: "off (explicit)" },
@@ -79,23 +78,13 @@ const FAST_LEVELS = [
 const REASONING_LEVELS = ["", "off", "on", "stream"] as const;
 const PAGE_SIZES = [10, 25, 50, 100] as const;
 
-function normalizeProviderId(provider?: string | null): string {
-  if (!provider) {
-    return "";
-  }
-  const normalized = normalizeLowercaseStringOrEmpty(provider);
-  if (normalized === "z.ai" || normalized === "z-ai") {
-    return "zai";
-  }
-  return normalized;
+function resolveThinkLevelOptions(row: GatewaySessionRow): readonly string[] {
+  const options = row.thinkingOptions?.length ? row.thinkingOptions : DEFAULT_THINK_LEVELS;
+  return ["", ...options];
 }
 
-function isBinaryThinkingProvider(provider?: string | null): boolean {
-  return normalizeProviderId(provider) === "zai";
-}
-
-function resolveThinkLevelOptions(provider?: string | null): readonly string[] {
-  return isBinaryThinkingProvider(provider) ? BINARY_THINK_LEVELS : THINK_LEVELS;
+function isBinaryThinkingRow(row: GatewaySessionRow): boolean {
+  return row.thinkingOptions?.includes("on") === true;
 }
 
 function withCurrentOption(options: readonly string[], current: string): string[] {
@@ -260,11 +249,9 @@ export function renderSessions(props: SessionsProps) {
         <div>
           <div class="card-title">Sessions</div>
           <div class="card-sub">
-            ${
-              props.result
-                ? `Store: ${props.result.path}`
-                : "Active session keys and per-session overrides."
-            }
+            ${props.result
+              ? `Store: ${props.result.path}`
+              : "Active session keys and per-session overrides."}
           </div>
         </div>
         <button class="btn" ?disabled=${props.loading} @click=${props.onRefresh}>
@@ -332,11 +319,9 @@ export function renderSessions(props: SessionsProps) {
         </label>
       </div>
 
-      ${
-        props.error
-          ? html`<div class="callout danger" style="margin-bottom: 12px;">${props.error}</div>`
-          : nothing
-      }
+      ${props.error
+        ? html`<div class="callout danger" style="margin-bottom: 12px;">${props.error}</div>`
+        : nothing}
 
       <div class="data-table-wrapper">
         <div class="data-table-toolbar">
@@ -350,9 +335,8 @@ export function renderSessions(props: SessionsProps) {
           </div>
         </div>
 
-        ${
-          props.selectedKeys.size > 0
-            ? html`
+        ${props.selectedKeys.size > 0
+          ? html`
               <div class="data-table-bulk-bar">
                 <span>${props.selectedKeys.size} selected</span>
                 <button class="btn btn--sm" @click=${props.onDeselectAll}>
@@ -367,26 +351,20 @@ export function renderSessions(props: SessionsProps) {
                 </button>
               </div>
             `
-            : nothing
-        }
+          : nothing}
 
         <div class="data-table-container">
           <table class="data-table">
             <thead>
               <tr>
                 <th class="data-table-checkbox-col">
-                  ${
-                    paginated.length > 0
-                      ? html`<input
+                  ${paginated.length > 0
+                    ? html`<input
                         type="checkbox"
-                        .checked=${
-                          paginated.length > 0 &&
-                          paginated.every((r) => props.selectedKeys.has(r.key))
-                        }
-                        .indeterminate=${
-                          paginated.some((r) => props.selectedKeys.has(r.key)) &&
-                          !paginated.every((r) => props.selectedKeys.has(r.key))
-                        }
+                        .checked=${paginated.length > 0 &&
+                        paginated.every((r) => props.selectedKeys.has(r.key))}
+                        .indeterminate=${paginated.some((r) => props.selectedKeys.has(r.key)) &&
+                        !paginated.every((r) => props.selectedKeys.has(r.key))}
                         @change=${() => {
                           const allSelected = paginated.every((r) => props.selectedKeys.has(r.key));
                           if (allSelected) {
@@ -397,8 +375,7 @@ export function renderSessions(props: SessionsProps) {
                         }}
                         aria-label="Select all on page"
                       />`
-                      : nothing
-                  }
+                    : nothing}
                 </th>
                 ${sortHeader("key", "Key", "data-table-key-col")}
                 <th>Label</th>
@@ -412,24 +389,24 @@ export function renderSessions(props: SessionsProps) {
               </tr>
             </thead>
             <tbody>
-              ${
-                paginated.length === 0
-                  ? html`
-                      <tr>
-                        <td colspan="11" style="text-align: center; padding: 48px 16px; color: var(--muted)">
-                          No sessions found.
-                        </td>
-                      </tr>
-                    `
-                  : paginated.flatMap((row) => renderRows(row, props))
-              }
+              ${paginated.length === 0
+                ? html`
+                    <tr>
+                      <td
+                        colspan="11"
+                        style="text-align: center; padding: 48px 16px; color: var(--muted)"
+                      >
+                        No sessions found.
+                      </td>
+                    </tr>
+                  `
+                : paginated.flatMap((row) => renderRows(row, props))}
             </tbody>
           </table>
         </div>
 
-        ${
-          totalRows > 0
-            ? html`
+        ${totalRows > 0
+          ? html`
               <div class="data-table-pagination">
                 <div class="data-table-pagination__info">
                   ${page * props.pageSize + 1}-${Math.min((page + 1) * props.pageSize, totalRows)}
@@ -456,8 +433,7 @@ export function renderSessions(props: SessionsProps) {
                 </div>
               </div>
             `
-            : nothing
-        }
+          : nothing}
       </div>
     </section>
   `;
@@ -466,9 +442,9 @@ export function renderSessions(props: SessionsProps) {
 function renderRows(row: GatewaySessionRow, props: SessionsProps) {
   const updated = row.updatedAt ? formatRelativeTimestamp(row.updatedAt) : t("common.na");
   const rawThinking = row.thinkingLevel ?? "";
-  const isBinaryThinking = isBinaryThinkingProvider(row.modelProvider);
+  const isBinaryThinking = isBinaryThinkingRow(row);
   const thinking = resolveThinkLevelDisplay(rawThinking, isBinaryThinking);
-  const thinkLevels = withCurrentOption(resolveThinkLevelOptions(row.modelProvider), thinking);
+  const thinkLevels = withCurrentOption(resolveThinkLevelOptions(row), thinking);
   const fastMode = row.fastMode === true ? "on" : row.fastMode === false ? "off" : "";
   const fastLevels = withCurrentLabeledOption(FAST_LEVELS, fastMode);
   const verbose = row.verboseLevel ?? "";
@@ -510,9 +486,8 @@ function renderRows(row: GatewaySessionRow, props: SessionsProps) {
       </td>
       <td class="data-table-key-col">
         <div class="mono session-key-cell">
-          ${
-            canLink
-              ? html`<a
+          ${canLink
+            ? html`<a
                 href=${chatUrl}
                 class="session-link"
                 @click=${(e: MouseEvent) => {
@@ -533,13 +508,10 @@ function renderRows(row: GatewaySessionRow, props: SessionsProps) {
                 }}
                 >${row.key}</a
               >`
-              : row.key
-          }
-          ${
-            showDisplayName
-              ? html`<span class="muted session-key-display-name">${displayName}</span>`
-              : nothing
-          }
+            : row.key}
+          ${showDisplayName
+            ? html`<span class="muted session-key-display-name">${displayName}</span>`
+            : nothing}
         </div>
       </td>
       <td>
@@ -562,22 +534,18 @@ function renderRows(row: GatewaySessionRow, props: SessionsProps) {
       <td>
         <div style="display: grid; gap: 6px;">
           <span class="muted" style="font-size: 12px;">
-            ${
-              checkpointCount > 0
-                ? `${checkpointCount} checkpoint${checkpointCount === 1 ? "" : "s"}`
-                : "none"
-            }
+            ${checkpointCount > 0
+              ? `${checkpointCount} checkpoint${checkpointCount === 1 ? "" : "s"}`
+              : "none"}
           </span>
-          ${
-            latestCheckpoint
-              ? html`
+          ${latestCheckpoint
+            ? html`
                 <span style="font-size: 12px;">
                   ${formatCheckpointReason(latestCheckpoint.reason)} ·
                   ${formatRelativeTimestamp(latestCheckpoint.createdAt)}
                 </span>
               `
-              : nothing
-          }
+            : nothing}
           <button
             class="btn btn--sm"
             ?disabled=${props.checkpointLoadingKey === row.key}
@@ -665,18 +633,17 @@ function renderRows(row: GatewaySessionRow, props: SessionsProps) {
               <div
                 style="padding: 14px 16px; border-top: 1px solid var(--border); background: var(--surface-2, rgba(127, 127, 127, 0.05));"
               >
-                ${
-                  props.checkpointLoadingKey === row.key
-                    ? html`
-                        <div class="muted">Loading checkpoints…</div>
-                      `
-                    : checkpointError
-                      ? html`<div class="callout danger">${checkpointError}</div>`
-                      : checkpointItems.length === 0
-                        ? html`
-                            <div class="muted">No compaction checkpoints recorded for this session.</div>
-                          `
-                        : html`
+                ${props.checkpointLoadingKey === row.key
+                  ? html` <div class="muted">Loading checkpoints…</div> `
+                  : checkpointError
+                    ? html`<div class="callout danger">${checkpointError}</div>`
+                    : checkpointItems.length === 0
+                      ? html`
+                          <div class="muted">
+                            No compaction checkpoints recorded for this session.
+                          </div>
+                        `
+                      : html`
                           <div style="display: grid; gap: 10px;">
                             ${checkpointItems.map(
                               (checkpoint) => html`
@@ -694,21 +661,16 @@ function renderRows(row: GatewaySessionRow, props: SessionsProps) {
                                       ${formatCheckpointDelta(checkpoint)}
                                     </span>
                                   </div>
-                                  ${
-                                    checkpoint.summary
-                                      ? html`<div style="white-space: pre-wrap;">
+                                  ${checkpoint.summary
+                                    ? html`<div style="white-space: pre-wrap;">
                                         ${checkpoint.summary}
                                       </div>`
-                                      : html`
-                                          <div class="muted">No summary captured.</div>
-                                        `
-                                  }
+                                    : html` <div class="muted">No summary captured.</div> `}
                                   <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                                     <button
                                       class="btn btn--sm"
-                                      ?disabled=${
-                                        props.checkpointBusyKey === checkpoint.checkpointId
-                                      }
+                                      ?disabled=${props.checkpointBusyKey ===
+                                      checkpoint.checkpointId}
                                       @click=${() =>
                                         props.onBranchFromCheckpoint(
                                           row.key,
@@ -719,9 +681,8 @@ function renderRows(row: GatewaySessionRow, props: SessionsProps) {
                                     </button>
                                     <button
                                       class="btn btn--sm"
-                                      ?disabled=${
-                                        props.checkpointBusyKey === checkpoint.checkpointId
-                                      }
+                                      ?disabled=${props.checkpointBusyKey ===
+                                      checkpoint.checkpointId}
                                       @click=${() =>
                                         props.onRestoreCheckpoint(row.key, checkpoint.checkpointId)}
                                     >
@@ -732,8 +693,7 @@ function renderRows(row: GatewaySessionRow, props: SessionsProps) {
                               `,
                             )}
                           </div>
-                        `
-                }
+                        `}
               </div>
             </td>
           </tr>`,

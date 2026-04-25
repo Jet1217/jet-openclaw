@@ -1,52 +1,17 @@
 import { html, nothing } from "lit";
+import {
+  resolvePendingDeviceApprovalState,
+  type DevicePairingAccessSummary,
+  type PendingDeviceApprovalKind,
+} from "../../../../src/shared/device-pairing-access.js";
 import { t } from "../../i18n/index.ts";
-import type {
-  DevicePairingList,
-  DeviceTokenSummary,
-  PairedDevice,
-  PendingDevice,
-} from "../controllers/devices.ts";
-import type { ExecApprovalsFile, ExecApprovalsSnapshot } from "../controllers/exec-approvals.ts";
+import type { DeviceTokenSummary, PairedDevice, PendingDevice } from "../controllers/devices.ts";
 import { formatRelativeTimestamp, formatList } from "../format.ts";
 import { normalizeOptionalString } from "../string-coerce.ts";
 import { renderExecApprovals, resolveExecApprovalsState } from "./nodes-exec-approvals.ts";
 import { resolveConfigAgents, resolveNodeTargets, type NodeTargetOption } from "./nodes-shared.ts";
-export type NodesProps = {
-  loading: boolean;
-  nodes: Array<Record<string, unknown>>;
-  devicesLoading: boolean;
-  devicesError: string | null;
-  devicesList: DevicePairingList | null;
-  configForm: Record<string, unknown> | null;
-  configLoading: boolean;
-  configSaving: boolean;
-  configDirty: boolean;
-  configFormMode: "form" | "raw";
-  execApprovalsLoading: boolean;
-  execApprovalsSaving: boolean;
-  execApprovalsDirty: boolean;
-  execApprovalsSnapshot: ExecApprovalsSnapshot | null;
-  execApprovalsForm: ExecApprovalsFile | null;
-  execApprovalsSelectedAgent: string | null;
-  execApprovalsTarget: "gateway" | "node";
-  execApprovalsTargetNodeId: string | null;
-  onRefresh: () => void;
-  onDevicesRefresh: () => void;
-  onDeviceApprove: (requestId: string) => void;
-  onDeviceReject: (requestId: string) => void;
-  onDeviceRotate: (deviceId: string, role: string, scopes?: string[]) => void;
-  onDeviceRevoke: (deviceId: string, role: string) => void;
-  onLoadConfig: () => void;
-  onLoadExecApprovals: () => void;
-  onBindDefault: (nodeId: string | null) => void;
-  onBindAgent: (agentIndex: number, nodeId: string | null) => void;
-  onSaveBindings: () => void;
-  onExecApprovalsTargetChange: (kind: "gateway" | "node", nodeId: string | null) => void;
-  onExecApprovalsSelectAgent: (agentId: string) => void;
-  onExecApprovalsPatch: (path: Array<string | number>, value: unknown) => void;
-  onExecApprovalsRemove: (path: Array<string | number>) => void;
-  onSaveExecApprovals: () => void;
-};
+export type { NodesProps } from "./nodes.types.ts";
+import type { NodesProps } from "./nodes.types.ts";
 
 export function renderNodes(props: NodesProps) {
   const bindingState = resolveBindingsState(props);
@@ -64,13 +29,9 @@ export function renderNodes(props: NodesProps) {
         </button>
       </div>
       <div class="list" style="margin-top: 16px;">
-        ${
-          props.nodes.length === 0
-            ? html`
-                <div class="muted">No nodes found.</div>
-              `
-            : props.nodes.map((n) => renderNode(n))
-        }
+        ${props.nodes.length === 0
+          ? html` <div class="muted">No nodes found.</div> `
+          : props.nodes.map((n) => renderNode(n))}
       </div>
     </section>
   `;
@@ -80,6 +41,11 @@ function renderDevices(props: NodesProps) {
   const list = props.devicesList ?? { pending: [], paired: [] };
   const pending = Array.isArray(list.pending) ? list.pending : [];
   const paired = Array.isArray(list.paired) ? list.paired : [];
+  const pairedByDeviceId = new Map(
+    paired
+      .map((device) => [normalizeOptionalString(device.deviceId), device] as const)
+      .filter((entry): entry is [string, PairedDevice] => Boolean(entry[0])),
+  );
   return html`
     <section class="card">
       <div class="row" style="justify-content: space-between;">
@@ -91,45 +57,79 @@ function renderDevices(props: NodesProps) {
           ${props.devicesLoading ? t("common.loading") : t("common.refresh")}
         </button>
       </div>
-      ${
-        props.devicesError
-          ? html`<div class="callout danger" style="margin-top: 12px;">${props.devicesError}</div>`
-          : nothing
-      }
+      ${props.devicesError
+        ? html`<div class="callout danger" style="margin-top: 12px;">${props.devicesError}</div>`
+        : nothing}
       <div class="list" style="margin-top: 16px;">
-        ${
-          pending.length > 0
-            ? html`
+        ${pending.length > 0
+          ? html`
               <div class="muted" style="margin-bottom: 8px;">Pending</div>
-              ${pending.map((req) => renderPendingDevice(req, props))}
+              ${pending.map((req) =>
+                renderPendingDevice(req, props, lookupPairedDevice(pairedByDeviceId, req)),
+              )}
             `
-            : nothing
-        }
-        ${
-          paired.length > 0
-            ? html`
+          : nothing}
+        ${paired.length > 0
+          ? html`
               <div class="muted" style="margin-top: 12px; margin-bottom: 8px;">Paired</div>
               ${paired.map((device) => renderPairedDevice(device, props))}
             `
-            : nothing
-        }
-        ${
-          pending.length === 0 && paired.length === 0
-            ? html`
-                <div class="muted">No paired devices.</div>
-              `
-            : nothing
-        }
+          : nothing}
+        ${pending.length === 0 && paired.length === 0
+          ? html` <div class="muted">No paired devices.</div> `
+          : nothing}
       </div>
     </section>
   `;
 }
 
-function renderPendingDevice(req: PendingDevice, props: NodesProps) {
+function lookupPairedDevice(
+  pairedByDeviceId: ReadonlyMap<string, PairedDevice>,
+  request: Pick<PendingDevice, "deviceId" | "publicKey">,
+): PairedDevice | undefined {
+  const deviceId = normalizeOptionalString(request.deviceId);
+  if (!deviceId) {
+    return undefined;
+  }
+  const paired = pairedByDeviceId.get(deviceId);
+  if (!paired) {
+    return undefined;
+  }
+  const requestPublicKey = normalizeOptionalString(request.publicKey);
+  const pairedPublicKey = normalizeOptionalString(paired.publicKey);
+  if (requestPublicKey && pairedPublicKey && requestPublicKey !== pairedPublicKey) {
+    return undefined;
+  }
+  return paired;
+}
+
+function formatAccessSummary(access: DevicePairingAccessSummary | null): string {
+  if (!access) {
+    return "none";
+  }
+  return `roles: ${formatList(access.roles)} · scopes: ${formatList(access.scopes)}`;
+}
+
+function renderPendingApprovalNote(kind: PendingDeviceApprovalKind) {
+  switch (kind) {
+    case "scope-upgrade":
+      return "scope upgrade requires approval";
+    case "role-upgrade":
+      return "role upgrade requires approval";
+    case "re-approval":
+      return "reconnect details changed; approval required";
+    case "new-pairing":
+      return "new device pairing request";
+  }
+  const exhaustiveKind: never = kind;
+  void exhaustiveKind;
+  throw new Error("unsupported pending approval kind");
+}
+
+function renderPendingDevice(req: PendingDevice, props: NodesProps, paired?: PairedDevice) {
   const name = normalizeOptionalString(req.displayName) || req.deviceId;
   const age = typeof req.ts === "number" ? formatRelativeTimestamp(req.ts) : t("common.na");
-  const roleValue = normalizeOptionalString(req.role) || formatList(req.roles);
-  const scopesValue = formatList(req.scopes);
+  const approval = resolvePendingDeviceApprovalState(req, paired);
   const repair = req.isRepair ? " · repair" : "";
   const ip = req.remoteIp ? ` · ${req.remoteIp}` : "";
   return html`
@@ -138,8 +138,18 @@ function renderPendingDevice(req: PendingDevice, props: NodesProps) {
         <div class="list-title">${name}</div>
         <div class="list-sub">${req.deviceId}${ip}</div>
         <div class="muted" style="margin-top: 6px;">
-          role: ${roleValue} · scopes: ${scopesValue} · requested ${age}${repair}
+          ${renderPendingApprovalNote(approval.kind)} · requested ${age}${repair}
         </div>
+        <div class="muted" style="margin-top: 6px;">
+          requested: ${formatAccessSummary(approval.requested)}
+        </div>
+        ${approval.approved
+          ? html`
+              <div class="muted" style="margin-top: 6px;">
+                approved now: ${formatAccessSummary(approval.approved)}
+              </div>
+            `
+          : nothing}
       </div>
       <div class="list-meta">
         <div class="row" style="justify-content: flex-end; gap: 8px; flex-wrap: wrap;">
@@ -167,18 +177,14 @@ function renderPairedDevice(device: PairedDevice, props: NodesProps) {
         <div class="list-title">${name}</div>
         <div class="list-sub">${device.deviceId}${ip}</div>
         <div class="muted" style="margin-top: 6px;">${roles} · ${scopes}</div>
-        ${
-          tokens.length === 0
-            ? html`
-                <div class="muted" style="margin-top: 6px">Tokens: none</div>
-              `
-            : html`
+        ${tokens.length === 0
+          ? html` <div class="muted" style="margin-top: 6px">Tokens: none</div> `
+          : html`
               <div class="muted" style="margin-top: 10px;">Tokens</div>
               <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
                 ${tokens.map((token) => renderTokenRow(device.deviceId, token, props))}
               </div>
-            `
-        }
+            `}
       </div>
     </div>
   `;
@@ -200,18 +206,16 @@ function renderTokenRow(deviceId: string, token: DeviceTokenSummary, props: Node
         >
           Rotate
         </button>
-        ${
-          token.revokedAtMs
-            ? nothing
-            : html`
+        ${token.revokedAtMs
+          ? nothing
+          : html`
               <button
                 class="btn btn--sm danger"
                 @click=${() => props.onDeviceRevoke(deviceId, token.role)}
               >
                 Revoke
               </button>
-            `
-        }
+            `}
       </div>
     </div>
   `;
@@ -285,24 +289,21 @@ function renderBindings(state: BindingState) {
         </button>
       </div>
 
-      ${
-        state.formMode === "raw"
-          ? html`
+      ${state.formMode === "raw"
+        ? html`
             <div class="callout warn" style="margin-top: 12px">
               ${t("nodes.binding.formModeHint")}
             </div>
           `
-          : nothing
-      }
-      ${
-        !state.ready
-          ? html`<div class="row" style="margin-top: 12px; gap: 12px;">
+        : nothing}
+      ${!state.ready
+        ? html`<div class="row" style="margin-top: 12px; gap: 12px;">
             <div class="muted">${t("nodes.binding.loadConfigHint")}</div>
             <button class="btn" ?disabled=${state.configLoading} @click=${state.onLoadConfig}>
               ${state.configLoading ? t("common.loading") : t("common.loadConfig")}
             </button>
           </div>`
-          : html`
+        : html`
             <div class="list" style="margin-top: 16px;">
               <div class="list-item">
                 <div class="list-main">
@@ -329,26 +330,17 @@ function renderBindings(state: BindingState) {
                       )}
                     </select>
                   </label>
-                  ${
-                    !supportsBinding
-                      ? html`
-                          <div class="muted">No nodes with system.run available.</div>
-                        `
-                      : nothing
-                  }
+                  ${!supportsBinding
+                    ? html` <div class="muted">No nodes with system.run available.</div> `
+                    : nothing}
                 </div>
               </div>
 
-              ${
-                state.agents.length === 0
-                  ? html`
-                      <div class="muted">No agents found.</div>
-                    `
-                  : state.agents.map((agent) => renderAgentBinding(agent, state))
-              }
+              ${state.agents.length === 0
+                ? html` <div class="muted">No agents found.</div> `
+                : state.agents.map((agent) => renderAgentBinding(agent, state))}
             </div>
-          `
-      }
+          `}
     </section>
   `;
 }
@@ -363,11 +355,9 @@ function renderAgentBinding(agent: BindingAgent, state: BindingState) {
         <div class="list-title">${label}</div>
         <div class="list-sub">
           ${agent.isDefault ? "default agent" : "agent"} ·
-          ${
-            bindingValue === "__default__"
-              ? `uses default (${state.defaultBinding ?? "any"})`
-              : `override: ${agent.binding}`
-          }
+          ${bindingValue === "__default__"
+            ? `uses default (${state.defaultBinding ?? "any"})`
+            : `override: ${agent.binding}`}
         </div>
       </div>
       <div class="list-meta">
