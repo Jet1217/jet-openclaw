@@ -1,4 +1,4 @@
-# Ploval Video Models
+# Chraft Video Models
 
 Pass the **alias** as the `model` field. The server maps it to the internal model ID.
 

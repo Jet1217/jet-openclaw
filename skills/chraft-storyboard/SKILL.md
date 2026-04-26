@@ -1,11 +1,11 @@
 ---
 name: chraft-storyboard
-description: Generate a cinematic storyboard grid from a reference image using the Ploval storyboard API. Use whenever the user wants to create a storyboard, multi-panel grid, shot breakdown, scene panels, or cinematic panels from an image. Authentication uses the sandbox user context (chraftUseKey); no API key prompts.
+description: Generate a cinematic storyboard grid from a reference image using the Chraft storyboard API. Use whenever the user wants to create a storyboard, multi-panel grid, shot breakdown, scene panels, or cinematic panels from an image. Authentication uses the sandbox user context (chraftUseKey); no API key prompts.
 ---
 
-# Ploval — Cinematic Storyboard Generation
+# Chraft — Cinematic Storyboard Generation
 
-This skill generates a multi-panel cinematic storyboard grid from a reference image by calling Ploval's `/api/openclaw/media/storyboard` endpoint, then polls until complete.
+This skill generates a multi-panel cinematic storyboard grid from a reference image by calling Chraft's `/api/openclaw/media/storyboard` endpoint, then polls until complete.
 
 The storyboard renders the subject from multiple distinct camera angles arranged in a grid. Character appearance, style, and lighting are kept consistent across all panels — only camera positions change.
 
@@ -20,7 +20,7 @@ import path from "path";
 const stateDir = process.env.OPENCLAW_STATE_DIR || "/data";
 const ctx = JSON.parse(fs.readFileSync(path.join(stateDir, "user-context.json"), "utf8"));
 const { chraftUseKey } = ctx;
-const CHRAFT_BASE_URL = process.env.CHRAFT_BASE_URL || "https://ploval.ai";
+const CHRAFT_BASE_URL = process.env.CHRAFT_BASE_URL || "https://chraft.ai";
 
 function authHeaders() {
   return {
@@ -30,7 +30,7 @@ function authHeaders() {
 }
 ```
 
-If `chraftUseKey` is empty, tell the user their sandbox hasn't been linked to a Ploval account yet.
+If `chraftUseKey` is empty, tell the user their sandbox hasn't been linked to a Chraft account yet.
 
 ---
 
@@ -114,7 +114,7 @@ Grid: 3×3 (9 panels) · Credits used: 25
 | ------ | ------------------------------------------ | -------------------------------------------- |
 | `401`  | Key not found or inactive                  | Check that the sandbox is running and paired |
 | `400`  | Missing `image_url` or invalid `grid_size` | Fix the request parameters                   |
-| `402`  | Insufficient credits                       | Tell the user to top up credits on Ploval    |
+| `402`  | Insufficient credits                       | Tell the user to top up credits on Chraft    |
 | `502`  | AI provider error                          | Retry once; if persistent, report            |
 | `500`  | Database error                             | Retry once                                   |
 

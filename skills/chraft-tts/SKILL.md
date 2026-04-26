@@ -1,11 +1,11 @@
 ---
 name: chraft-tts
-description: Convert text to natural-sounding speech via the Ploval TTS API (ElevenLabs). Use this skill whenever the user wants to generate a voiceover, narration, spoken audio, or any text-to-speech output — including phrases like "read this aloud", "generate audio for", "make a voiceover", or "speak this text". Authentication is handled automatically from the sandbox user context; no API key setup required.
+description: Convert text to natural-sounding speech via the Chraft TTS API (ElevenLabs). Use this skill whenever the user wants to generate a voiceover, narration, spoken audio, or any text-to-speech output — including phrases like "read this aloud", "generate audio for", "make a voiceover", or "speak this text". Authentication is handled automatically from the sandbox user context; no API key setup required.
 ---
 
-# Ploval — Text-to-Speech (TTS)
+# Chraft — Text-to-Speech (TTS)
 
-This skill converts text to speech by calling Ploval's `/api/openclaw/media/tts` endpoint, powered by ElevenLabs.
+This skill converts text to speech by calling Chraft's `/api/openclaw/media/tts` endpoint, powered by ElevenLabs.
 
 TTS is **synchronous** — the API call returns the audio URL directly, with no polling required. Generation typically takes 3–10 seconds.
 
@@ -22,7 +22,7 @@ import path from "path";
 const stateDir = process.env.OPENCLAW_STATE_DIR || "/data";
 const ctx = JSON.parse(fs.readFileSync(path.join(stateDir, "user-context.json"), "utf8"));
 const { chraftUseKey } = ctx;
-const CHRAFT_BASE_URL = process.env.CHRAFT_BASE_URL || "https://ploval.ai";
+const CHRAFT_BASE_URL = process.env.CHRAFT_BASE_URL || "https://chraft.ai";
 
 function authHeaders() {
   return {
@@ -32,7 +32,7 @@ function authHeaders() {
 }
 ```
 
-If `chraftUseKey` is empty, tell the user their sandbox hasn't been linked to a Ploval account yet.
+If `chraftUseKey` is empty, tell the user their sandbox hasn't been linked to a Chraft account yet.
 
 ---
 
@@ -128,7 +128,7 @@ The chat UI auto-renders inline audio players for `.mp3`, `.wav`, `.ogg`, and `.
 | ------ | ----------------------------------------------- | -------------------------------------------- |
 | `401`  | Key not found or inactive                       | Check that the sandbox is running and paired |
 | `400`  | Missing `text` or text too long / invalid model | Fix the request parameters                   |
-| `402`  | Insufficient credits                            | Tell the user to top up credits on Ploval    |
+| `402`  | Insufficient credits                            | Tell the user to top up credits on Chraft    |
 | `502`  | ElevenLabs API error                            | Retry once; if persistent, report            |
 | `500`  | Server error                                    | Retry once                                   |
 
