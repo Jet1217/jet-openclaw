@@ -5,7 +5,7 @@ description: Generate music or songs via the Chraft media API. Use this skill wh
 
 # Chraft — Music Generation
 
-This skill generates music by calling Chraft's `/api/openclaw/media/music` endpoint using Suno.
+This skill generates music by calling Chraft's `/api/evostudio/media/music` endpoint using Suno.
 
 ---
 
@@ -39,7 +39,7 @@ Use when the user wants any music: background tracks, full songs with vocals, cu
 ### Step 1 — Start the generation job
 
 ```javascript
-const res = await fetch(`${CHRAFT_BASE_URL}/api/openclaw/media/music`, {
+const res = await fetch(`${CHRAFT_BASE_URL}/api/evostudio/media/music`, {
   method: "POST",
   headers: authHeaders(),
   body: JSON.stringify({
@@ -78,7 +78,7 @@ const deadline = Date.now() + 180_000; // 3 minutes
 while (Date.now() < deadline) {
   await new Promise((r) => setTimeout(r, 5000));
 
-  const poll = await fetch(`${CHRAFT_BASE_URL}/api/openclaw/media/music?audio_id=${audioId}`, {
+  const poll = await fetch(`${CHRAFT_BASE_URL}/api/evostudio/media/music?audio_id=${audioId}`, {
     headers: authHeaders(),
   });
   const data = await poll.json();

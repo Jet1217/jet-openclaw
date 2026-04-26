@@ -5,7 +5,7 @@ description: Analyze video content using Chraft's AI vision API. Use this skill 
 
 # Chraft — Video Analysis
 
-This skill analyzes videos by calling Chraft's `/api/openclaw/media/analyze` endpoint. It supports YouTube URLs (analyzed directly via OpenRouter), TikTok / Instagram Reels, and direct video file URLs (`.mp4`, `.mov`, etc.) — the latter two are automatically downloaded and uploaded to Gemini before analysis.
+This skill analyzes videos by calling Chraft's `/api/evostudio/media/analyze` endpoint. It supports YouTube URLs (analyzed directly via OpenRouter), TikTok / Instagram Reels, and direct video file URLs (`.mp4`, `.mov`, etc.) — the latter two are automatically downloaded and uploaded to Gemini before analysis.
 
 The response always contains three structured sections:
 
@@ -41,7 +41,7 @@ If `chraftUseKey` is empty, tell the user their sandbox hasn't been linked to a 
 ## Step 1 — Call the analyze endpoint
 
 ```javascript
-const res = await fetch(`${CHRAFT_BASE_URL}/api/openclaw/media/analyze`, {
+const res = await fetch(`${CHRAFT_BASE_URL}/api/evostudio/media/analyze`, {
   method: "POST",
   headers: authHeaders(),
   body: JSON.stringify({

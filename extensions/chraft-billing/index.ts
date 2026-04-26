@@ -34,16 +34,20 @@ export default function register(api: OpenClawPluginApi) {
     return;
   }
 
-  const endpoint = `${baseUrl}/api/openclaw/usage`;
+  const endpoint = `${baseUrl}/api/evostudio/usage`;
 
   api.on("llm_output", async (event, ctx) => {
-    if (!event.usage) return;
+    if (!event.usage) {
+      return;
+    }
 
     const { input, output, cacheRead, cacheWrite } = event.usage;
 
     // Skip if all token counts are zero or missing
     const totalTokens = (input ?? 0) + (output ?? 0) + (cacheRead ?? 0) + (cacheWrite ?? 0);
-    if (totalTokens === 0) return;
+    if (totalTokens === 0) {
+      return;
+    }
 
     // Read user context fresh each time to pick up any key rotation
     const userCtx = loadUserContext();

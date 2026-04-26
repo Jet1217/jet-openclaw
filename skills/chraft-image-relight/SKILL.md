@@ -5,7 +5,7 @@ description: Relight an existing image with new lighting conditions using the Ch
 
 # Chraft — Image Relight
 
-This skill relights an existing image by calling Chraft's `/api/openclaw/media/relight` endpoint, then polls until complete.
+This skill relights an existing image by calling Chraft's `/api/evostudio/media/relight` endpoint, then polls until complete.
 
 The model preserves all subject details, composition, and style — only the lighting changes.
 
@@ -45,7 +45,7 @@ const payload = {
   brightness: brightness ?? 50, // Brightness 0–100 (default: 50)
 };
 
-const res = await fetch(`${CHRAFT_BASE_URL}/api/openclaw/media/relight`, {
+const res = await fetch(`${CHRAFT_BASE_URL}/api/evostudio/media/relight`, {
   method: "POST",
   headers: authHeaders(),
   body: JSON.stringify(payload),
@@ -94,7 +94,7 @@ const deadline = Date.now() + 120_000; // 2 minutes
 while (Date.now() < deadline) {
   await new Promise((r) => setTimeout(r, 3000));
 
-  const poll = await fetch(`${CHRAFT_BASE_URL}/api/openclaw/media/relight?image_id=${imageId}`, {
+  const poll = await fetch(`${CHRAFT_BASE_URL}/api/evostudio/media/relight?image_id=${imageId}`, {
     headers: authHeaders(),
   });
   const data = await poll.json();

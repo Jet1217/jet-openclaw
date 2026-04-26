@@ -52,7 +52,7 @@ Use this when you have a URL from an AI tool (Kling, Fal, Replicate, etc.) and w
 
 ```javascript
 async function uploadUrl(remoteUrl, filenameHint) {
-  const res = await fetch(`${CHRAFT_BASE_URL}/api/openclaw/media/upload`, {
+  const res = await fetch(`${CHRAFT_BASE_URL}/api/evostudio/media/upload`, {
     method: "POST",
     headers: authHeaders(),
     body: JSON.stringify({ url: remoteUrl, filename: filenameHint }),
@@ -77,7 +77,7 @@ async function uploadLocalFile(filePath, filenameHint) {
   if (fileBuffer.length < 4 * 1024 * 1024) {
     const formData = new FormData();
     formData.append("file", new Blob([fileBuffer]), filename);
-    const res = await fetch(`${CHRAFT_BASE_URL}/api/openclaw/media/upload`, {
+    const res = await fetch(`${CHRAFT_BASE_URL}/api/evostudio/media/upload`, {
       method: "POST",
       headers: { Authorization: `Bearer ${chraftUseKey}` },
       body: formData,
@@ -106,7 +106,7 @@ async function uploadLocalFile(filePath, filenameHint) {
   const ext = filename.split(".").pop()?.toLowerCase();
   const contentType = extMap[ext] || "application/octet-stream";
 
-  const presignRes = await fetch(`${CHRAFT_BASE_URL}/api/openclaw/media/upload`, {
+  const presignRes = await fetch(`${CHRAFT_BASE_URL}/api/evostudio/media/upload`, {
     method: "POST",
     headers: authHeaders(),
     body: JSON.stringify({ presign: true, filename, contentType, size: fileBuffer.length }),

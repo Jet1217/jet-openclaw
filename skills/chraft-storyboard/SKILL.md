@@ -5,7 +5,7 @@ description: Generate a cinematic storyboard grid from a reference image using t
 
 # Chraft — Cinematic Storyboard Generation
 
-This skill generates a multi-panel cinematic storyboard grid from a reference image by calling Chraft's `/api/openclaw/media/storyboard` endpoint, then polls until complete.
+This skill generates a multi-panel cinematic storyboard grid from a reference image by calling Chraft's `/api/evostudio/media/storyboard` endpoint, then polls until complete.
 
 The storyboard renders the subject from multiple distinct camera angles arranged in a grid. Character appearance, style, and lighting are kept consistent across all panels — only camera positions change.
 
@@ -44,7 +44,7 @@ const payload = {
   aspect_ratio: "16:9", // Output aspect ratio for each panel
 };
 
-const res = await fetch(`${CHRAFT_BASE_URL}/api/openclaw/media/storyboard`, {
+const res = await fetch(`${CHRAFT_BASE_URL}/api/evostudio/media/storyboard`, {
   method: "POST",
   headers: authHeaders(),
   body: JSON.stringify(payload),
@@ -77,9 +77,12 @@ const deadline = Date.now() + 180_000; // 3 minutes
 while (Date.now() < deadline) {
   await new Promise((r) => setTimeout(r, 5000));
 
-  const poll = await fetch(`${CHRAFT_BASE_URL}/api/openclaw/media/storyboard?image_id=${imageId}`, {
-    headers: authHeaders(),
-  });
+  const poll = await fetch(
+    `${CHRAFT_BASE_URL}/api/evostudio/media/storyboard?image_id=${imageId}`,
+    {
+      headers: authHeaders(),
+    },
+  );
   const data = await poll.json();
 
   if (data.status === "completed") {

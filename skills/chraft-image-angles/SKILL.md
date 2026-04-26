@@ -5,7 +5,7 @@ description: Generate a new view of a subject from a different camera angle usin
 
 # Chraft — Multiple Angles Generation
 
-This skill generates a new image of the same subject from a different camera angle by calling Chraft's `/api/openclaw/media/angles` endpoint, then polls until complete.
+This skill generates a new image of the same subject from a different camera angle by calling Chraft's `/api/evostudio/media/angles` endpoint, then polls until complete.
 
 The model keeps the subject identical — only the camera position changes. Works best with people, characters, objects, and products.
 
@@ -44,7 +44,7 @@ const payload = {
   zoom: zoom ?? 5, // Zoom level 1–10 (default: 5)
 };
 
-const res = await fetch(`${CHRAFT_BASE_URL}/api/openclaw/media/angles`, {
+const res = await fetch(`${CHRAFT_BASE_URL}/api/evostudio/media/angles`, {
   method: "POST",
   headers: authHeaders(),
   body: JSON.stringify(payload),
@@ -83,7 +83,7 @@ const deadline = Date.now() + 120_000; // 2 minutes
 while (Date.now() < deadline) {
   await new Promise((r) => setTimeout(r, 3000));
 
-  const poll = await fetch(`${CHRAFT_BASE_URL}/api/openclaw/media/angles?image_id=${imageId}`, {
+  const poll = await fetch(`${CHRAFT_BASE_URL}/api/evostudio/media/angles?image_id=${imageId}`, {
     headers: authHeaders(),
   });
   const data = await poll.json();

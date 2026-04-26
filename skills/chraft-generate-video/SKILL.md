@@ -5,7 +5,7 @@ description: Generate videos via the Chraft media API. Use this skill whenever t
 
 # Chraft — Video Generation
 
-This skill generates videos by calling Chraft's `/api/openclaw/media/video` endpoint, then polls until the job completes. It supports both text-to-video (T2V) and image-to-video (I2V).
+This skill generates videos by calling Chraft's `/api/evostudio/media/video` endpoint, then polls until the job completes. It supports both text-to-video (T2V) and image-to-video (I2V).
 
 Videos take longer than images — typically 1–3 minutes — because the AI model has to render multiple frames. The polling loop handles this transparently.
 
@@ -48,7 +48,7 @@ If `chraftUseKey` is empty, tell the user their sandbox hasn't been linked to a 
 ## Step 1 — Start the generation job
 
 ```javascript
-const res = await fetch(`${CHRAFT_BASE_URL}/api/openclaw/media/video`, {
+const res = await fetch(`${CHRAFT_BASE_URL}/api/evostudio/media/video`, {
   method: "POST",
   headers: authHeaders(),
   body: JSON.stringify({
@@ -122,7 +122,7 @@ const deadline = Date.now() + 300_000; // 5 minutes
 while (Date.now() < deadline) {
   await new Promise((r) => setTimeout(r, 5000));
 
-  const poll = await fetch(`${CHRAFT_BASE_URL}/api/openclaw/media/video?video_id=${videoId}`, {
+  const poll = await fetch(`${CHRAFT_BASE_URL}/api/evostudio/media/video?video_id=${videoId}`, {
     headers: authHeaders(),
   });
   const data = await poll.json();

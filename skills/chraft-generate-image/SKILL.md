@@ -5,7 +5,7 @@ description: Generate, edit, or inpaint images via the Chraft media API using th
 
 # Chraft — Image Generation, Editing & Inpainting
 
-This skill covers three modes — all using the same `/api/openclaw/media/image` endpoint:
+This skill covers three modes — all using the same `/api/evostudio/media/image` endpoint:
 
 | Mode              | When to use                                                                            | Key parameters                                                            |
 | ----------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
@@ -69,7 +69,7 @@ if (referenceImageUrls?.length) {
   payload.input_images = referenceImageUrls;
 }
 
-const res = await fetch(`${CHRAFT_BASE_URL}/api/openclaw/media/image`, {
+const res = await fetch(`${CHRAFT_BASE_URL}/api/evostudio/media/image`, {
   method: "POST",
   headers: authHeaders(),
   body: JSON.stringify(payload),
@@ -129,7 +129,7 @@ const deadline = Date.now() + 120_000;
 while (Date.now() < deadline) {
   await new Promise((r) => setTimeout(r, 3000));
 
-  const poll = await fetch(`${CHRAFT_BASE_URL}/api/openclaw/media/image?image_id=${imageId}`, {
+  const poll = await fetch(`${CHRAFT_BASE_URL}/api/evostudio/media/image?image_id=${imageId}`, {
     headers: authHeaders(),
   });
   const data = await poll.json();

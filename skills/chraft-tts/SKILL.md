@@ -5,7 +5,7 @@ description: Convert text to natural-sounding speech via the Chraft TTS API (Ele
 
 # Chraft — Text-to-Speech (TTS)
 
-This skill converts text to speech by calling Chraft's `/api/openclaw/media/tts` endpoint, powered by ElevenLabs.
+This skill converts text to speech by calling Chraft's `/api/evostudio/media/tts` endpoint, powered by ElevenLabs.
 
 TTS is **synchronous** — the API call returns the audio URL directly, with no polling required. Generation typically takes 3–10 seconds.
 
@@ -39,7 +39,7 @@ If `chraftUseKey` is empty, tell the user their sandbox hasn't been linked to a 
 ## Generate speech
 
 ```javascript
-const res = await fetch(`${CHRAFT_BASE_URL}/api/openclaw/media/tts`, {
+const res = await fetch(`${CHRAFT_BASE_URL}/api/evostudio/media/tts`, {
   method: "POST",
   headers: authHeaders(),
   body: JSON.stringify({
