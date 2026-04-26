@@ -1,9 +1,9 @@
 ---
 name: chraft-generate-image
-description: Generate, edit, or inpaint images via the Chraft media API using the user's sandbox credentials. Supports text-to-image, image editing (pass input_images), and inpainting (describe what to replace in a region). Defaults to Nano Banana 2 (model alias "nano-banana-2") for text-to-image and Nano Banana 2 edit for edit/inpaint. Use whenever the user wants to create, generate, draw, edit, retouch, replace a region, or inpaint any kind of image. Authentication uses the sandbox user context (chraftUseKey); no API key prompts.
+description: Generate, edit, or inpaint images via the Ploval media API using the user's sandbox credentials. Supports text-to-image, image editing (pass input_images), and inpainting (describe what to replace in a region). Defaults to Nano Banana 2 (model alias "nano-banana-2") for text-to-image and Nano Banana 2 edit for edit/inpaint. Use whenever the user wants to create, generate, draw, edit, retouch, replace a region, or inpaint any kind of image. Authentication uses the sandbox user context (chraftUseKey); no API key prompts.
 ---
 
-# Chraft — Image Generation, Editing & Inpainting
+# Ploval — Image Generation, Editing & Inpainting
 
 This skill covers three modes — all using the same `/api/openclaw/media/image` endpoint:
 
@@ -19,7 +19,7 @@ The skill uses two calls: one to start the job, one (repeated) to check if it's 
 
 ## Load credentials from sandbox context
 
-Read the user context file — this is where the sandbox stores the Chraft API key. The key is already injected; there's nothing to configure.
+Read the user context file — this is where the sandbox stores the Ploval API key. The key is already injected; there's nothing to configure.
 
 ```javascript
 import fs from "fs";
@@ -28,7 +28,7 @@ import path from "path";
 const stateDir = process.env.OPENCLAW_STATE_DIR || "/data";
 const ctx = JSON.parse(fs.readFileSync(path.join(stateDir, "user-context.json"), "utf8"));
 const { chraftUseKey } = ctx;
-const CHRAFT_BASE_URL = process.env.CHRAFT_BASE_URL || "https://chraft.ai";
+const CHRAFT_BASE_URL = process.env.CHRAFT_BASE_URL || "https://ploval.ai";
 
 function authHeaders() {
   return {
@@ -38,7 +38,7 @@ function authHeaders() {
 }
 ```
 
-If `chraftUseKey` is empty, tell the user their sandbox hasn't been linked to a Chraft account yet.
+If `chraftUseKey` is empty, tell the user their sandbox hasn't been linked to a Ploval account yet.
 
 ---
 
@@ -92,7 +92,7 @@ See `references/image-models.md` for the full model list with descriptions.
 | General generation (default)    | `nano-banana-2`    |
 | Higher quality / more detail    | `nano-banana-pro`  |
 | Photorealistic, multi-reference | `flux-2-pro`       |
-| GPT-powered, high fidelity      | `gpt-image-1.5`    |
+| GPT-powered, high fidelity      | `gpt-image-2`      |
 | Artistic / stylized             | `seedream-v5-lite` |
 
 **Model selection for edit / inpaint:**
@@ -103,7 +103,7 @@ See `references/image-models.md` for the full model list with descriptions.
 | Explicit edit variant             | `nano-banana-2-edit`    |
 | Higher-quality edit               | `nano-banana-pro`       |
 | Photorealistic context edit       | `flux-2-pro`            |
-| GPT-powered edit                  | `gpt-image-1.5-edit`    |
+| GPT-powered edit                  | `gpt-image-2-edit`      |
 | Artistic style edit               | `seedream-v5-lite-edit` |
 
 **Aspect ratio quick reference:**
@@ -168,7 +168,7 @@ If multiple images were requested, show all of them.
 | ------ | ----------------------------------------- | -------------------------------------------- |
 | `401`  | Key not found or inactive                 | Check that the sandbox is running and paired |
 | `400`  | Missing `model`/`prompt` or invalid model | Fix the request parameters                   |
-| `402`  | Insufficient credits                      | Tell the user to top up credits on Chraft    |
+| `402`  | Insufficient credits                      | Tell the user to top up credits on Ploval    |
 | `502`  | AI provider error                         | Retry once; if persistent, report            |
 | `500`  | Database error                            | Retry once                                   |
 
@@ -206,10 +206,10 @@ All errors return `{ success: false, error: "..." }`. A `402` also includes `err
 → `model: "nano-banana-pro"` or `model: "flux-2-pro"`, `aspect_ratio: "2:3"` (see references for full alias list)
 
 **"Create a high-fidelity AI image with GPT"**
-→ `model: "gpt-image-1.5"`, prompt as-is
+→ `model: "gpt-image-2"`, prompt as-is
 
 **"Edit this image with high fidelity GPT changes"** (user provides image URL)
-→ edit mode: `input_images: [url]`, `model: "gpt-image-1.5-edit"`, descriptive prompt
+→ edit mode: `input_images: [url]`, `model: "gpt-image-2-edit"`, descriptive prompt
 
 **"Edit this image with precise context-aware changes"** (user provides image URL)
 → edit mode: `input_images: [url]`, `model: "nano-banana-pro"` or `model: "flux-2-pro"`, descriptive prompt
