@@ -1,4 +1,4 @@
-# Ploval Image Models
+# Chraft Image Models
 
 Pass one of these **alias strings** as the `model` field.  
 **Default when the user does not specify a model:** `nano-banana-2`
