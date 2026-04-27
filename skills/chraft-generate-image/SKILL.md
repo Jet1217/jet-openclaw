@@ -1,6 +1,6 @@
 ---
 name: chraft-generate-image
-description: Generate, edit, or inpaint images via the Chraft media API using the user's sandbox credentials. Supports text-to-image, image editing (pass input_images), and inpainting (describe what to replace in a region). Defaults to Nano Banana 2 (model alias "nano-banana-2") for text-to-image and Nano Banana 2 edit for edit/inpaint. Use whenever the user wants to create, generate, draw, edit, retouch, replace a region, or inpaint any kind of image. Authentication uses the sandbox user context (chraftUseKey); no API key prompts.
+description: Generate, edit, or inpaint images via the Chraft media API using the user's sandbox credentials. Supports text-to-image, image editing (pass input_images), and inpainting (describe what to replace in a region). Defaults to GPT Image 2 (model alias "gpt-image-2") for text-to-image and GPT Image 2 edit ("gpt-image-2-edit") for edit/inpaint. Use whenever the user wants to create, generate, draw, edit, retouch, replace a region, or inpaint any kind of image. Authentication uses the sandbox user context (chraftUseKey); no API key prompts.
 ---
 
 # Chraft — Image Generation, Editing & Inpainting
@@ -50,13 +50,16 @@ Send a POST request with the model and prompt. The response immediately returns 
 
 - **Edit mode:** `input_images` = the image to edit; `prompt` = what change to make
 - **Inpaint mode:** `input_images` = the image to inpaint; `prompt` = describe what the target region should look like (e.g. "replace the red jacket with a blue hoodie", "remove the person in the background")
-- When `input_images` is provided, Nano Banana 2 automatically routes to the edit/inpaint endpoint server-side — no model change needed.
+- When `input_images` is provided, switch the default model to the edit variant (`gpt-image-2-edit`) so the request routes to the edit/inpaint endpoint.
 
 ```javascript
-const DEFAULT_MODEL = "nano-banana-2";
+const DEFAULT_MODEL = "gpt-image-2";
+const DEFAULT_EDIT_MODEL = "gpt-image-2-edit";
+
+const hasReferenceImages = !!referenceImageUrls?.length;
 
 const payload = {
-  model: model ?? DEFAULT_MODEL,
+  model: model ?? (hasReferenceImages ? DEFAULT_EDIT_MODEL : DEFAULT_MODEL),
   prompt,
   aspect_ratio: aspectRatio ?? "1:1",
   quality: "hd",
@@ -65,7 +68,7 @@ const payload = {
 };
 
 // Edit / inpaint: include the source image URL(s)
-if (referenceImageUrls?.length) {
+if (hasReferenceImages) {
   payload.input_images = referenceImageUrls;
 }
 
@@ -87,23 +90,22 @@ See `references/image-models.md` for the full model list with descriptions.
 
 **Model selection for text-to-image:**
 
-| Need                            | Recommended model  |
-| ------------------------------- | ------------------ |
-| General generation (default)    | `nano-banana-2`    |
-| Higher quality / more detail    | `nano-banana-pro`  |
-| Photorealistic, multi-reference | `flux-2-pro`       |
-| GPT-powered, high fidelity      | `gpt-image-2`      |
-| Artistic / stylized             | `seedream-v5-lite` |
+| Need                                        | Recommended model  |
+| ------------------------------------------- | ------------------ |
+| General generation (default, high fidelity) | `gpt-image-2`      |
+| Fast / lightweight generation               | `nano-banana-2`    |
+| Higher quality / more detail                | `nano-banana-pro`  |
+| Photorealistic, multi-reference             | `flux-2-pro`       |
+| Artistic / stylized                         | `seedream-v5-lite` |
 
 **Model selection for edit / inpaint:**
 
 | Need                              | Recommended model       |
 | --------------------------------- | ----------------------- |
-| General edit or inpaint (default) | `nano-banana-2`         |
-| Explicit edit variant             | `nano-banana-2-edit`    |
+| General edit or inpaint (default) | `gpt-image-2-edit`      |
+| Fast / lightweight edit           | `nano-banana-2-edit`    |
 | Higher-quality edit               | `nano-banana-pro`       |
 | Photorealistic context edit       | `flux-2-pro`            |
-| GPT-powered edit                  | `gpt-image-2-edit`      |
 | Artistic style edit               | `seedream-v5-lite-edit` |
 
 **Aspect ratio quick reference:**
@@ -155,7 +157,7 @@ Show each image inline as a markdown image, followed by a brief summary:
 ```markdown
 ![Generated Image](https://...)
 
-Model: nano-banana-2 · Credits used: 10
+Model: gpt-image-2 · Credits used: 10
 ```
 
 If multiple images were requested, show all of them.
@@ -179,7 +181,7 @@ All errors return `{ success: false, error: "..." }`. A `402` also includes `err
 ## Example interactions
 
 **"Generate a futuristic city at night"**
-→ text-to-image, default `model: "nano-banana-2"`, prompt as-is
+→ text-to-image, default `model: "gpt-image-2"`, prompt as-is
 
 **"Make a 16:9 landscape wallpaper of mountains at sunset"**
 → `aspect_ratio: "16:9"`, default model, prompt as-is
@@ -191,7 +193,7 @@ All errors return `{ success: false, error: "..." }`. A `402` also includes `err
 → edit mode: `input_images: [url]`, `prompt: "add holiday packaging"`, default model
 
 **"Change the background to a snowy forest"** (user provides image URL)
-→ edit mode: `input_images: [url]`, `prompt: "change the background to a snowy forest"`, `model: "nano-banana-2"`
+→ edit mode: `input_images: [url]`, `prompt: "change the background to a snowy forest"`, default `model: "gpt-image-2-edit"`
 
 **"Remove the person standing in the background"** (user provides image URL)
 → inpaint mode: `input_images: [url]`, `prompt: "remove the person in the background, fill with natural scenery"`, default model
@@ -205,11 +207,8 @@ All errors return `{ success: false, error: "..." }`. A `402` also includes `err
 **"Create a photorealistic portrait, high quality"**
 → `model: "nano-banana-pro"` or `model: "flux-2-pro"`, `aspect_ratio: "2:3"` (see references for full alias list)
 
-**"Create a high-fidelity AI image with GPT"**
-→ `model: "gpt-image-2"`, prompt as-is
-
-**"Edit this image with high fidelity GPT changes"** (user provides image URL)
-→ edit mode: `input_images: [url]`, `model: "gpt-image-2-edit"`, descriptive prompt
+**"Use a faster / cheaper model"**
+→ `model: "nano-banana-2"` (text-to-image) or `model: "nano-banana-2-edit"` (edit/inpaint)
 
 **"Edit this image with precise context-aware changes"** (user provides image URL)
 → edit mode: `input_images: [url]`, `model: "nano-banana-pro"` or `model: "flux-2-pro"`, descriptive prompt
