@@ -117,7 +117,7 @@ See `references/video-models.md` for the full model list organised by series (Kl
 Videos can take up to 5 minutes. Poll every 5 seconds and keep the user informed if they're waiting.
 
 ```javascript
-const deadline = Date.now() + 300_000; // 5 minutes
+const deadline = Date.now() + 600_000; // 10 minutes
 
 while (Date.now() < deadline) {
   await new Promise((r) => setTimeout(r, 5000));
@@ -136,7 +136,7 @@ while (Date.now() < deadline) {
   // pending / processing → keep polling
 }
 
-throw new Error("Video generation timed out after 5 minutes");
+throw new Error("Video generation timed out after 10 minutes");
 ```
 
 ---
