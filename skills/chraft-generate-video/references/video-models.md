@@ -30,16 +30,16 @@ Pass the **alias** as the `model` field. The server maps it to the internal mode
 
 ## Seedance Series (ByteDance)
 
-| Alias                 | Mode    | Duration | Notes                                                           |
-| --------------------- | ------- | -------- | --------------------------------------------------------------- |
-| `seedance2`           | T2V     | 4–15s    | Seedance 2.0 standard                                           |
-| `seedance2-i2v`       | I2V     | 4–15s    | `start_image_url` required; pass `end_image_url` for transition |
-| `seedance2-omni`      | T2V+I2V | 4–15s    | Seedance 2.0 standard                                           |
-| `seedance2-fast`      | T2V     | 4–15s    | Seedance 2.0 Fast — lower cost, faster                          |
-| `seedance2-fast-i2v`  | I2V     | 4–15s    | `start_image_url` required; pass `end_image_url` for transition |
-| `seedance2-fast-omni` | T2V+I2V | 4–15s    | Seedance 2.0 Fast                                               |
-| `seedance1.5`         | T2V+I2V | 12s      | native audio — **default model**                                |
-| `seedance1`           | T2V+I2V | 12s      |                                                                 |
+| Alias                 | Mode    | Duration | Notes                                                                           |
+| --------------------- | ------- | -------- | ------------------------------------------------------------------------------- |
+| `seedance2`           | T2V     | 4–15s    | Seedance 2.0 standard — supports 720p (default) and 1080p (`resolution: "fhd"`) |
+| `seedance2-i2v`       | I2V     | 4–15s    | `start_image_url` required; pass `end_image_url` for transition; 720p/1080p     |
+| `seedance2-omni`      | T2V+I2V | 4–15s    | Seedance 2.0 standard — 720p/1080p                                              |
+| `seedance2-fast`      | T2V     | 4–15s    | Seedance 2.0 Fast — lower cost, faster; 720p only                               |
+| `seedance2-fast-i2v`  | I2V     | 4–15s    | `start_image_url` required; pass `end_image_url` for transition; 720p only      |
+| `seedance2-fast-omni` | T2V+I2V | 4–15s    | Seedance 2.0 Fast — 720p only                                                   |
+| `seedance1.5`         | T2V+I2V | 12s      | native audio — **default model**                                                |
+| `seedance1`           | T2V+I2V | 12s      |                                                                                 |
 
 ---
 
@@ -117,3 +117,17 @@ Pass the **alias** as the `model` field. The server maps it to the internal mode
 | `pixverse-v5.5-i2v` | I2V  | 10s — first+last frame                   |
 | `pixverse-v5`       | T2V  | 8s                                       |
 | `pixverse-v5-i2v`   | I2V  | 8s — first+last frame                    |
+
+---
+
+## Happy Horse 1.0 (Alibaba, via Fal)
+
+| Alias             | Mode               | Max Duration | Notes                                                                                                                    |
+| ----------------- | ------------------ | ------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| `happyhorse`      | T2V                | 15s          | Alias for `happyhorse-t2v`                                                                                               |
+| `happyhorse-t2v`  | T2V                | 15s          | Native lip-sync + Foley audio, multilingual (7 languages), 720p/1080p                                                    |
+| `happyhorse-i2v`  | I2V                | 15s          | `start_image_url` required; native audio + lip-sync; 720p/1080p                                                          |
+| `happyhorse-ref`  | Reference-to-Video | 15s          | Up to 5 reference images for character/object consistency; 720p/1080p                                                    |
+| `happyhorse-edit` | Video edit         | 15s          | Edit an existing video (up to 15s input) with natural-language prompts + optional reference images (up to 5); 720p/1080p |
+
+Supported durations: 3–15 s (any integer). Supported aspect ratios: `16:9`, `9:16`, `1:1`, `4:3`, `3:4`.

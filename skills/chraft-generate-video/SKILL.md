@@ -101,6 +101,7 @@ See `references/video-models.md` for the full model list organised by series (Kl
 - Fast models (lower cost, faster render): `seedance2-fast`, `seedance2-fast-i2v`, `seedance2-fast-omni`
 - I2V variants require `start_image_url`; pass `end_image_url` as well for a first+last-frame transition
 - Supported durations: 4–15 s (any integer); supported aspect ratios: `16:9`, `9:16`, `1:1`, `4:3`, `3:4`, `21:9`
+- **Resolution:** Standard (non-fast) models support `hd` (720p, default) and `fhd` (1080p). Fast models are `hd` (720p) only — `fhd` is ignored and falls back to 720p.
 
 **PixVerse duration note:** v5 supports 5 or 8 s only; v5.5 and v5.6 support 5, 8, or 10 s (10 s only at 720p). v6 supports **1–15 s** (any integer). v5 has no audio; v5.5/v5.6/v6 auto-generate native audio.
 
@@ -110,17 +111,24 @@ See `references/video-models.md` for the full model list organised by series (Kl
 
 **PixVerse transition (first+last frame):** When the user provides two images (start and end), pass both `start_image_url` and `end_image_url` with a PixVerse I2V model to interpolate between the two frames. Supported on v5, v5.5, v5.6, and v6.
 
+**Happy Horse 1.0 notes:**
+
+- Aliases: `happyhorse` / `happyhorse-t2v` (T2V), `happyhorse-i2v` (I2V), `happyhorse-ref` (reference-to-video, up to 5 reference images), `happyhorse-edit` (video edit, up to 5 reference images + a source video).
+- Supported durations: 3–15 s (any integer). Supported aspect ratios: `16:9`, `9:16`, `1:1`, `4:3`, `3:4`.
+- Resolution: `hd` (720p) or `fhd` (1080p). Native lip-sync and Foley audio in 7 languages — good for dialogue-driven scenes.
+- `happyhorse-edit` requires a source video URL (`start_image_url` is not used); pass reference images via `image_urls` when supported by the caller.
+
 ---
 
 ## Step 2 — Poll for completion
 
-Videos can take up to 5 minutes. Poll every 5 seconds and keep the user informed if they're waiting.
+Videos can take up to 20 minutes depending on the model and queue. Poll every 5 seconds and keep the user informed if they're waiting.
 
 ```javascript
-const deadline = Date.now() + 600_000; // 10 minutes
+const deadline = Date.now() + 1_200_000; // 20 minutes
 
 while (Date.now() < deadline) {
-  await new Promise((r) => setTimeout(r, 5000));
+  await new Promise((r) => setTimeout(r, 5_000));
 
   const poll = await fetch(`${CHRAFT_BASE_URL}/api/evostudio/media/video?video_id=${videoId}`, {
     headers: authHeaders(),
@@ -136,7 +144,13 @@ while (Date.now() < deadline) {
   // pending / processing → keep polling
 }
 
-throw new Error("Video generation timed out after 10 minutes");
+// Timed out — don't throw, let the user resume later
+return {
+  videoUrls: [],
+  videoId,
+  timedOut: true,
+  message: `Video is still generating after 40 minutes. Your video ID is \`${videoId}\` — check back later or ask me to poll again.`,
+};
 ```
 
 ---
@@ -207,3 +221,9 @@ All errors return `{ success: false, error: "..." }`. A `402` also includes `err
 
 **"PixVerse v6 transition between two images"**
 → I2V, `pixverse-v6-i2v`, `start_image_url: <first>`, `end_image_url: <last>`, `duration: 5`
+
+**"Generate a 10-second Happy Horse video of two people chatting in a café"**
+→ T2V, `happyhorse` (user-specified), `aspect_ratio: "16:9"`, `duration: 10`, `resolution: "hd"`
+
+**"Animate this portrait into a talking-head clip with Happy Horse"**
+→ I2V, `happyhorse-i2v` (user-specified), `start_image_url: <url>`, `duration: 8`
