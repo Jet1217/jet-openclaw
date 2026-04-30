@@ -6,25 +6,28 @@ Pass the **alias** as the `model` field. The server maps it to the internal mode
 
 ## Kling Series (Kuaishou)
 
-| Alias                   | Mode    | Max Duration          |
-| ----------------------- | ------- | --------------------- |
-| `kling3-pro`            | T2V     | 15s                   |
-| `kling3-pro-i2v`        | I2V     | 15s                   |
-| `kling3-standard`       | T2V     | 15s — **default T2V** |
-| `kling3-standard-i2v`   | I2V     | 15s — **default I2V** |
-| `kling2.6-pro`          | T2V     | 10s                   |
-| `kling2.6-pro-i2v`      | I2V     | 10s                   |
-| `kling2.5-pro`          | T2V     | 10s                   |
-| `kling2.5-pro-i2v`      | I2V     | 10s                   |
-| `kling2.5-turbo`        | T2V+I2V | 10s                   |
-| `kling2.1`              | I2V     | 10s                   |
-| `kling2.1-master`       | T2V+I2V | 10s                   |
-| `kling1.6-standard`     | T2V     | 10s                   |
-| `kling1.6-standard-i2v` | I2V     | 10s                   |
-| `kling-o1-i2v`          | I2V     | 10s                   |
-| `kling-o1-standard-i2v` | I2V     | 10s                   |
-| `kling-o3-ref`          | I2V     | 15s                   |
-| `kling-o3-pro-ref`      | I2V     | 15s                   |
+| Alias                   | Mode    | Max Duration                                                  |
+| ----------------------- | ------- | ------------------------------------------------------------- |
+| `kling3-4k`             | T2V     | 15s — 4K ultra-high resolution (requires `resolution: "uhd"`) |
+| `kling3-4k-t2v`         | T2V     | 15s — same as `kling3-4k`                                     |
+| `kling3-4k-i2v`         | I2V     | 15s — 4K image-to-video (requires `resolution: "uhd"`)        |
+| `kling3-pro`            | T2V     | 15s                                                           |
+| `kling3-pro-i2v`        | I2V     | 15s                                                           |
+| `kling3-standard`       | T2V     | 15s — **default T2V**                                         |
+| `kling3-standard-i2v`   | I2V     | 15s — **default I2V**                                         |
+| `kling2.6-pro`          | T2V     | 10s                                                           |
+| `kling2.6-pro-i2v`      | I2V     | 10s                                                           |
+| `kling2.5-pro`          | T2V     | 10s                                                           |
+| `kling2.5-pro-i2v`      | I2V     | 10s                                                           |
+| `kling2.5-turbo`        | T2V+I2V | 10s                                                           |
+| `kling2.1`              | I2V     | 10s                                                           |
+| `kling2.1-master`       | T2V+I2V | 10s                                                           |
+| `kling1.6-standard`     | T2V     | 10s                                                           |
+| `kling1.6-standard-i2v` | I2V     | 10s                                                           |
+| `kling-o1-i2v`          | I2V     | 10s                                                           |
+| `kling-o1-standard-i2v` | I2V     | 10s                                                           |
+| `kling-o3-ref`          | I2V     | 15s                                                           |
+| `kling-o3-pro-ref`      | I2V     | 15s                                                           |
 
 ---
 
@@ -45,10 +48,10 @@ Pass the **alias** as the `model` field. The server maps it to the internal mode
 
 ## Google Veo Series
 
-| Alias         | Mode    | Max Duration      |
-| ------------- | ------- | ----------------- |
-| `veo3.1`      | T2V+I2V | 8s — native audio |
-| `veo3.1-fast` | T2V+I2V | 8s                |
+| Alias         | Mode    | Max Duration                                         |
+| ------------- | ------- | ---------------------------------------------------- |
+| `veo3.1`      | T2V+I2V | 8s — native audio, supports 4K (`resolution: "uhd"`) |
+| `veo3.1-fast` | T2V+I2V | 8s — supports 4K (`resolution: "uhd"`)               |
 
 ---
 
